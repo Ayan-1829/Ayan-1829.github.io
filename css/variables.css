@@ -1,0 +1,66 @@
+/* ============================================================
+   VARIABLES.CSS
+   All design tokens: colors, fonts, spacing for both themes.
+   Edit here to retheme the entire site at once.
+   ============================================================ */
+
+:root {
+  /* ── Academic Theme ───────────────────────── */
+  --acad-bg:        #0d1b2e;
+  --acad-surface:   #122240;
+  --acad-card:      #1a3055;
+  --acad-accent:    #e1c955;
+  --acad-accent2:   #4a90d9;
+  --acad-text:      #e8e4d8;
+  --acad-muted:     rgb(132, 172, 232);
+  --acad-border:    #2a4a6e;
+
+  /* ── Art Theme ────────────────────────────── */
+  --art-bg:         #f6ebc5;
+  --art-surface:    #ecceab;
+  --art-card:       #f3cba4;
+  --art-accent:     #c4622d;
+  --art-accent2:    #7a9e7e;
+  --art-accent3:    #d4956a;
+  --art-text:       #7f4e12;
+  --art-muted:      #8a6c55;
+  --art-border:     #ae6c25;
+
+  /* ── Active (defaults to Academic) ───────── */
+  --bg:       var(--acad-bg);
+  --surface:  var(--acad-surface);
+  --card:     var(--acad-card);
+  --accent:   var(--acad-accent);
+  --accent2:  var(--acad-accent2);
+  --text:     var(--acad-text);
+  --muted:    var(--acad-muted);
+  --border:   var(--acad-border);
+
+  /* ── Typography ───────────────────────────── */
+  --font-display:   'Playfair Display', serif;
+  --font-hand:      'Caveat', cursive;
+  --font-body:      'Source Serif 4', serif;
+  --font-italic:    'Lora', serif;
+
+  /* ── Spacing ──────────────────────────────── */
+  --section-pad:    5rem 3rem;
+  --card-pad:       2rem;
+  --radius-card:    10px;
+  --radius-pill:    50px;
+
+  /* ── Transitions ──────────────────────────── */
+  --theme-transition: 0.7s ease;
+  --hover-transition: 0.3s;
+}
+
+/* ── Art Mode Overrides ───────────────────────── */
+body.art-mode {
+  --bg:      var(--art-bg);
+  --surface: var(--art-surface);
+  --card:    var(--art-card);
+  --accent:  var(--art-accent);
+  --accent2: var(--art-accent2);
+  --text:    var(--art-text);
+  --muted:   var(--art-muted);
+  --border:  var(--art-border);
+}

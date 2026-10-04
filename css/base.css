@@ -1,0 +1,132 @@
+/* ============================================================
+   BASE.CSS
+   Reset, body styles, global typography, noise texture,
+   art-mode background decoration, and scroll behavior.
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  transition: background var(--theme-transition), color var(--theme-transition);
+  overflow-x: hidden;
+  min-height: 100vh;
+  /* position:relative removed — ink canvas is now fixed */
+}
+
+/* ── Noise Texture Overlay ────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.4;
+}
+
+/* ── Art Mode Ambient Background Blobs ────────── */
+.art-brush {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity var(--theme-transition);
+}
+
+body.art-mode .art-brush {
+  opacity: 1;
+}
+
+.art-brush::before {
+  content: '';
+  position: fixed;
+  top: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #c4622d22 0%, transparent 70%);
+}
+
+.art-brush::after {
+  content: '';
+  position: fixed;
+  bottom: -100px;
+  left: -100px;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #7a9e7e22 0%, transparent 70%);
+}
+
+/* ── Section Fade-in Animation ────────────────── */
+.profile-section {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Profile Mode Badge (bottom-right corner) ─── */
+.mode-badge {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 100;
+  transition: background var(--theme-transition), color var(--theme-transition);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Academic / Art Content Visibility ────────── */
+.art-only  { display: none; }
+
+body.art-mode .academic-only { display: none; }
+body.art-mode .art-only      { display: block; }
+
+/* ── Responsive Base ──────────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --section-pad: 3rem 1.5rem;
+  }
+}
+
+/* ── Custom Cursors ───────────────────────────── */
+/* All interactive elements inherit cursor from body
+   so JS in cursors.js fully controls the cursor.   */
+a, button, [onclick],
+.gallery-item, .floating-toggle,
+.course-card, .skill-pill, .btn {
+  cursor: inherit;
+}
+
+/* In art mode, suppress every hardcoded cursor so elements always
+   inherit the brush/none cursor set on <body> by JS.
+   We target only the properties that fight us, not body itself.    */
+body.art-mode *,
+body.art-mode a,
+body.art-mode button,
+body.art-mode img,
+body.art-mode [onclick] {
+  cursor: inherit !important;
+}

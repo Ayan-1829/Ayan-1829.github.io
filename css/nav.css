@@ -1,0 +1,303 @@
+/* ============================================================
+   NAV.CSS
+   Fixed top navigation bar, logo, nav links, and the
+   academic ↔ art profile toggle switch.
+   ============================================================ */
+
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1.2rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  transition:
+    background var(--theme-transition),
+    border-color var(--theme-transition);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Logo ─────────────────────────────────────── */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav-logo-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+.nav-logo-text {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  transition: color var(--theme-transition), font-family 0.4s;
+  white-space: nowrap;
+}
+
+body.art-mode .nav-logo-text {
+  font-family: var(--font-hand);
+  font-size: 1.6rem;
+}
+
+@media (max-width: 480px) {
+  .nav-logo-img { width: 32px; height: 32px; }
+  .nav-logo-text { font-size: 1.05rem; }
+}
+
+/* ── Links ────────────────────────────────────── */
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color var(--hover-transition);
+}
+
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+/* ── Toggle Wrapper ───────────────────────────── */
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.toggle-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.4s, font-family 0.4s;
+  font-family: var(--font-body);
+  user-select: none;
+}
+
+body.art-mode .toggle-label.art-lbl {
+  font-family: var(--font-hand);
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+
+/* ── Toggle Switch Track & Thumb ──────────────── */
+.toggle-switch {
+  position: relative;
+  width: 58px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.toggle-switch input { display: none; }
+
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 50px;
+  background: var(--acad-card);
+  border: 2px solid var(--acad-accent);
+  transition: background 0.5s, border-color 0.5s;
+  overflow: hidden;
+}
+
+/* Emoji icons inside track */
+.toggle-track::before {
+  content: '🎓';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  transition: opacity 0.4s;
+}
+
+.toggle-track::after {
+  content: '🎨';
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  opacity: 0.4;
+  transition: opacity 0.4s;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--acad-accent);
+  transition:
+    transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.5s;
+  z-index: 2;
+}
+
+/* ── Active (Art) State ───────────────────────── */
+.toggle-switch.active .toggle-track {
+  background: var(--art-bg);
+  border-color: var(--art-accent);
+}
+
+.toggle-switch.active .toggle-track::before { opacity: 0.4; }
+.toggle-switch.active .toggle-track::after  { opacity: 1; }
+
+.toggle-switch.active .toggle-thumb {
+  transform: translateX(30px);
+  background: var(--art-accent);
+}
+
+/* ── Responsive ───────────────────────────────── */
+@media (max-width: 1024px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+}
+
+/* ── Hamburger Button ─────────────────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px;
+  background: none;
+  border: none;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+/* Animate to X when open */
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Mobile Nav Menu ──────────────────────────── */
+@media (max-width: 1024px) {
+  .hamburger { display: flex; }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0;
+    transition: background 0.7s, border-color 0.7s;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links li {
+    width: 100%;
+  }
+
+  .nav-links a {
+    display: block;
+    padding: 0.85rem 2rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+
+  .nav-links a:hover {
+    background: var(--surface);
+  }
+
+  .toggle-wrapper {
+    gap: 0.5rem;
+  }
+
+  .toggle-label {
+    font-size: 0.65rem;
+  }
+}
+/* ── Animated nav link hover ──────────────────────────────────── */
+/* A rounded rectangular boundary draws itself around the link on
+   hover: the box scales up from 90% while its border fades in, and a
+   faint tinted fill settles behind the text. Padding is applied at all
+   times (not only on hover) so nothing shifts position when the
+   boundary appears. */
+.nav-links a {
+  position: relative;
+  display: inline-block;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  z-index: 0;
+  transition: color var(--hover-transition);
+}
+
+.nav-links a::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity var(--hover-transition), transform var(--hover-transition);
+  z-index: -1;
+}
+
+.nav-links a:hover::before,
+.nav-links a:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+/* Tighten the row so the new padding doesn't over-space the links. */
+.nav-links {
+  gap: 0.4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-links a::before { transition: opacity var(--hover-transition); transform: scale(1); }
+}
+
+/* Mobile drawer: links are full-width rows, so the boundary would look
+   out of place — keep the existing surface highlight there. */
+@media (max-width: 768px) {
+  .nav-links a { border-radius: 0; padding: 0.85rem 2rem; }
+  .nav-links a::before { display: none; }
+  .nav-links { gap: 0; }
+}

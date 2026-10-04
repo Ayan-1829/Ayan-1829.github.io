@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Design Project I logo">
+  <rect x="0" y="0" width="64" height="64" rx="15" fill="#17694A"/>
+  <path d="M21 29 V43 H33" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M42 29 V35" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round"/>
+  <rect x="11" y="12" width="20" height="17" rx="3" fill="#FFFFFF"/>
+  <path d="M11 18.5 H31" stroke="#17694A" stroke-width="1.6"/>
+  <rect x="33" y="12" width="20" height="17" rx="3" fill="#FFFFFF"/>
+  <path d="M33 18.5 H53" stroke="#17694A" stroke-width="1.6"/>
+  <rect x="33" y="35" width="20" height="17" rx="3" fill="#F27A96"/>
+  <path d="M33 41.5 H53" stroke="#9C1F44" stroke-width="1.6"/>
+</svg>
