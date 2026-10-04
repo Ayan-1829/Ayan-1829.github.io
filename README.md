@@ -1,6 +1,9 @@
 # Ayan Sarkar — Portfolio
 
 🌐 **Live Site:** [ayan-1829.github.io](https://ayan-1829.github.io/)
+📦 **Repository:** [Ayan-1829/Ayan-1829.github.io](https://github.com/Ayan-1829/Ayan-1829.github.io), the site root of `ayan-1829.github.io`
+
+The old address, `ayan-1829.github.io/portfolio/` (repo [Ayan-1829/portfolio](https://github.com/Ayan-1829/portfolio)), now only redirects here.
 
 A personal portfolio website for **Ayan Sarkar**, Lecturer in the Department of Computer Science and Engineering at Green University of Bangladesh. The site features a dual-profile design — switching seamlessly between an academic profile and an art profile.
 
@@ -42,14 +45,15 @@ A personal portfolio website for **Ayan Sarkar**, Lecturer in the Department of 
 
 - **HTML5 / CSS3 / Vanilla JavaScript** — No frameworks
 - **Google Fonts** — Playfair Display, Caveat, Source Serif 4, Lora
-- **Google Apps Script** — Contact form backend
+- **Cloudflare Worker + Google Apps Script** — Contact form and cookieless analytics backend (kept out of this repo)
+- **GitHub Pages** — Hosting, from the `main` branch of this repo
 
 ---
 
 ## Structure
 
 ```
-portfolio/
+Ayan-1829.github.io/
 ├── index.html
 ├── css/
 │   ├── variables.css
@@ -65,8 +69,11 @@ portfolio/
 ├── images/
 │   ├── artwork/      ← Painting images
 │   └── ...
+├── favicon.ico       ← 16/32/48 px: the icon Google Search shows for ayan-1829.github.io
 └── Ayan_Sarkar_CV.pdf
 ```
+
+This repo serves the root, `https://ayan-1829.github.io/`. Other repos with GitHub Pages turned on are served beside it, at `https://ayan-1829.github.io/<repo-name>/` (for example `/inside-the-computer/`), so never add a folder here with the same name as one of them.
 
 ---
 
