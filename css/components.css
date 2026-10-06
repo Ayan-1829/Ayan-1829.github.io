@@ -1497,7 +1497,7 @@ img,
 
 .cm-card-preview {
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1200 / 630;
   object-fit: cover;
   object-position: top;
   display: block;

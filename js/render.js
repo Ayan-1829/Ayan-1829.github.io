@@ -816,7 +816,7 @@ function courseMaterialsModalHTML(p) {
   return (p.institutions || []).map(inst => {
     const cards = (inst.courses || []).map(c => `
       <a href="${c.url}" target="_blank" rel="noopener" class="cm-card">
-        ${c.preview ? `<img src="${c.preview}" alt="${c.title} — course home page" class="cm-card-preview" loading="lazy"/>` : ''}
+        ${c.preview ? `<img src="${c.preview}" alt="${c.title} — course preview card" class="cm-card-preview" loading="lazy"/>` : ''}
         <div class="cm-card-body">
           <div class="cm-card-head">
             <img src="${c.logo}" alt="" class="cm-mini-logo"/>
