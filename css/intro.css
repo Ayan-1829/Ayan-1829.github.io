@@ -121,6 +121,10 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   animation: intro-splat 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .intro-splash--corner { z-index: 0; width: 200px; left: 3%; top: 3%; animation-delay: 0.75s; }
+/* A small hue shift each, so the three read as different throws of paint */
+.intro-splash--corner { filter: none; }
+.intro-splash--top    { filter: hue-rotate(35deg); }
+.intro-splash--under  { filter: hue-rotate(-40deg); }
 .intro-splash--top    { width: 190px; right: -20px; top: -190px; animation-delay: 0.9s; }
 .intro-splash--under  { width: 200px; left: 50%; top: calc(100% + 6px); margin-left: -100px; animation-delay: 1.05s; }
 
@@ -393,32 +397,36 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   }
   .intro--leaving .intro-name-m { opacity: 0; transition: opacity 0.35s ease; }
 
-  /* In each half the text and the picture sit side by side. The text
-     column runs to the bottom of the half, where its button sits. */
-  .intro-copy { bottom: 2.8vh; gap: 0.5rem; max-width: none; }
-  .intro-side--acad .intro-copy { left: 1.25rem; width: 56%; top: calc(2vh + min(11vw, 6vh) + 2.4vh); }
-  .intro-side--art  .intro-copy { right: 1.25rem; width: 52%; top: 30%; }
-  .intro-kicker { margin-top: auto; }  /* centres the text in the space above the button */
-  .intro-cta { margin-top: auto; padding: 0.6rem 1rem; font-size: 0.72rem; letter-spacing: 0.05em; }
+  /* In each half the text and the picture sit side by side, both
+     placed from the centre line rather than from the screen edges: the
+     text runs up to the middle from one side and the picture starts at
+     the middle on the other. Each button is centred at the bottom. */
+  .intro-copy { left: 0; right: 0; bottom: 2.8vh; width: auto; max-width: none; padding: 0 1.25rem; gap: 0.5rem; align-items: stretch; }
+  .intro-side--acad .intro-copy { top: calc(2vh + min(11vw, 6vh) + 2.4vh); }
+  .intro-side--art  .intro-copy { top: 46%; }
+  .intro-side--acad .intro-kicker,
+  .intro-side--acad .intro-role { margin-right: 47%; text-align: right; justify-content: flex-end; }
+  .intro-side--art  .intro-kicker,
+  .intro-side--art  .intro-role { margin-left: 47%; text-align: left; justify-content: flex-start; }
+  .intro-side--acad .intro-kicker { margin-top: auto; }  /* centres the text above the button */
+  .intro-cta { align-self: center; margin-top: auto; padding: 0.6rem 1.1rem; font-size: 0.72rem; letter-spacing: 0.05em; }
   .intro-tag, .intro-org { display: none; }
   .intro-role { font-size: clamp(1.15rem, 5.4vw, 1.5rem); }
   .intro-side--art .intro-role { font-size: clamp(1.6rem, 7.6vw, 2.1rem); }
 
-  /* Academic: photo at the right, sized by the screen width so it is
-     never cut off at the edge */
-  .intro-cutout { height: min(72%, 74vw); right: 3vw; }
+  /* Academic: the photo starts at the centre line, sized by the width */
+  .intro-cutout { height: min(72%, 74vw); left: 50%; right: auto; margin-left: -3vw; }
 
-  /* Art: the painting at the left, larger and higher than before */
-  .intro-frame { left: 4%; top: 7%; width: min(50vw, 28vh); animation-name: intro-pin-m; }
+  /* Art: the painting ends at the centre line, larger and higher */
+  .intro-frame { left: auto; right: 50%; margin-right: -2vw; top: 7%; width: min(48vw, 28vh); animation-name: intro-pin-m; }
   .intro-card { padding: 7px 7px 24px; }
   .intro-caption { font-size: 0.85rem; bottom: 3px; }
   .intro-tape { height: 16px; top: -8px; }
 
-  /* Splashes towards the middle, filling the space between the
-     painting, the text and the button */
-  .intro-splash--corner { width: 88px; left: 32%; top: 72%; }
-  .intro-splash--top    { width: 92px; right: auto; left: 30%; top: -104px; }  /* right of the painting */
-  .intro-splash--under  { width: 104px; margin-left: -40px; top: calc(100% + 4px); }
+  /* Two splashes: one just above the text, one below the painting */
+  .intro-splash--corner { display: none; }
+  .intro-splash--top    { width: 96px; left: 62%; right: auto; top: -96px; }
+  .intro-splash--under  { width: 104px; margin-left: -52px; top: calc(100% + 4px); }
 
   .intro-seam { display: none; }
 }
