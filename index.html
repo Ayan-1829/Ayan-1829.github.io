@@ -98,6 +98,22 @@
   <link rel="stylesheet" href="css/nav.css"/>
   <link rel="stylesheet" href="css/hero.css"/>
   <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="css/intro.css"/>
+  <script>
+    /* First-visit intro (js/intro.js): decided before the first paint so
+       the page doesn't flash behind it. Not for shared #links, repeat
+       views in the same session, or search-engine crawlers. If the intro
+       somehow never appears, the page is revealed after 4 seconds. */
+    (function () {
+      try {
+        if (location.hash || sessionStorage.getItem('introSeen') ||
+            /bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent)) return;
+        var root = document.documentElement;
+        root.classList.add('intro-pending');
+        setTimeout(function () { if (!document.getElementById('intro')) root.classList.remove('intro-pending'); }, 4000);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
 
@@ -290,6 +306,7 @@
 <script src="js/seo.js"></script>
 <script src="js/toggle.js"></script>
 <script src="js/cursors.js"></script>
+<script src="js/intro.js"></script>
 <script>
 
   /* ── Download CV (academic only) ──────────────── */
@@ -379,12 +396,13 @@
     }
   });
 
-  /* ── Logo → landing page ──────────────────────── */
+  /* ── Logo → landing page (the two-profile intro) ── */
   document.getElementById('nav-logo-link')?.addEventListener('click', function(e) {
     e.preventDefault();
     closeMenu();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     history.pushState({ section: '#top' }, '', window.location.pathname);
+    Intro.open();
   });
 
   /* ── Boot ─────────────────────────────────────── */
@@ -400,6 +418,7 @@
     if (typeof injectStructuredData === 'function') injectStructuredData();
 
     routeFromHash({ replace: true });
+    Intro.maybeShow();
   });
 </script>
  <script src="js/analytics.js"

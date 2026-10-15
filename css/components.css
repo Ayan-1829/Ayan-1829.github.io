@@ -1404,6 +1404,13 @@ img,
   scrollbar-color: var(--border) transparent;
   overscroll-behavior-x: contain;
 }
+/* Auto-scrolling shelves (render.js): snapping would fight the slow
+   drift, and soft edges show the row carries on past the card edge. */
+.cm-shelf--auto {
+  scroll-snap-type: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+}
 .cm-shelf::-webkit-scrollbar { height: 6px; }
 .cm-shelf::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 

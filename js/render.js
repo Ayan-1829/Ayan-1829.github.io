@@ -873,20 +873,91 @@ function updateCmShelf(shelf) {
   wrap.classList.toggle('cm-can-next', shelf.scrollLeft < max - 2);
 }
 
+/* ── Shelf auto-scroll ──────────────────────────────────────────────
+   A shelf whose cards don't all fit drifts slowly sideways and loops
+   seamlessly: its cards are repeated once (hidden from screen readers
+   and the tab order) and the position wraps by one set's width. It
+   stops while the mouse is over it or a card has keyboard focus,
+   pauses for a few seconds after a swipe, and never runs for visitors
+   who prefer reduced motion. */
+const SHELF_SPEED       = 34;    /* px per second */
+const SHELF_TOUCH_PAUSE = 3500;  /* ms to wait after a swipe */
+const shelfReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+function setupShelfLoop(shelf) {
+  const st = shelf._auto;
+  shelf.querySelectorAll('.cm-mini--clone').forEach(c => c.remove());
+  shelf.classList.remove('cm-shelf--auto');
+  st.loop = false;
+  const items = [...shelf.children];
+  if (!items.length || shelfReduceMotion.matches || shelf.scrollWidth <= shelf.clientWidth + 2) return;
+  items.forEach(it => {
+    const c = it.cloneNode(true);
+    c.classList.add('cm-mini--clone');
+    c.setAttribute('aria-hidden', 'true');
+    c.tabIndex = -1;
+    shelf.appendChild(c);
+  });
+  st.setWidth = shelf.children[items.length].offsetLeft - items[0].offsetLeft;
+  st.pos = shelf.scrollLeft % st.setWidth;
+  st.loop = true;
+  shelf.classList.add('cm-shelf--auto');
+}
+
+/* One animation loop drives every shelf. While a shelf is paused its
+   position follows the real scroll offset, so it carries on from
+   wherever the visitor scrolled or swiped it to. */
+let shelfLastFrame = 0;
+function shelfTick(now) {
+  const dt = shelfLastFrame ? Math.min(now - shelfLastFrame, 100) : 0;
+  shelfLastFrame = now;
+  document.querySelectorAll('.cm-shelf--auto').forEach(shelf => {
+    const st = shelf._auto;
+    if (st.hover || st.focus || now < st.touchUntil || !st.visible || shelf.offsetParent === null) {
+      st.pos = shelf.scrollLeft;
+      return;
+    }
+    st.pos += SHELF_SPEED * dt / 1000;
+    if (st.pos >= st.setWidth) st.pos -= st.setWidth;
+    shelf.scrollLeft = st.pos;
+  });
+  requestAnimationFrame(shelfTick);
+}
+
 function initCmShelves(root) {
   const shelves = root.querySelectorAll('.cm-shelf');
   if (!shelves.length) return;
+  const seen = ('IntersectionObserver' in window)
+    ? new IntersectionObserver(entries => entries.forEach(e => { e.target._auto.visible = e.isIntersecting; }))
+    : null;
   shelves.forEach(s => {
+    s._auto = { pos: 0, loop: false, setWidth: 0, hover: false, focus: false, touchUntil: 0, visible: true };
+    const wrap = s.parentElement;
     s.addEventListener('scroll', () => updateCmShelf(s), { passive: true });
+    /* Mouse only: a tap on a phone fires pointerenter but never pointerleave */
+    wrap.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') s._auto.hover = true; });
+    wrap.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') s._auto.hover = false; });
+    wrap.addEventListener('focusin',  () => { s._auto.focus = true; });
+    wrap.addEventListener('focusout', () => { s._auto.focus = false; });
+    s.addEventListener('touchstart', () => { s._auto.touchUntil = Infinity; }, { passive: true });
+    s.addEventListener('touchend',   () => { s._auto.touchUntil = performance.now() + SHELF_TOUCH_PAUSE; }, { passive: true });
+    if (seen) seen.observe(s);
+    setupShelfLoop(s);
+    updateCmShelf(s);
+  });
+  const refresh = () => document.querySelectorAll('.cm-shelf').forEach(s => {
+    if (s._auto) setupShelfLoop(s);
     updateCmShelf(s);
   });
   if (!window._cmShelfResize) {
     window._cmShelfResize = true;
-    window.addEventListener('resize', () =>
-      document.querySelectorAll('.cm-shelf').forEach(updateCmShelf));
+    let t;
+    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(refresh, 200); });
+    shelfReduceMotion.addEventListener?.('change', refresh);
+    requestAnimationFrame(shelfTick);
   }
   /* Images and fonts can change the row's width after first paint */
-  window.addEventListener('load', () => shelves.forEach(updateCmShelf), { once: true });
+  window.addEventListener('load', refresh, { once: true });
 }
 
 /* ── Project Modal — videos + extra info ── */
