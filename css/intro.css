@@ -397,15 +397,16 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
      column runs to the bottom of the half, where its button sits. */
   .intro-copy { bottom: 2.8vh; gap: 0.5rem; max-width: none; }
   .intro-side--acad .intro-copy { left: 1.25rem; width: 56%; top: calc(2vh + min(11vw, 6vh) + 2.4vh); }
-  .intro-side--art  .intro-copy { right: 1.25rem; width: 52%; top: 22%; }
-  .intro-side--acad .intro-kicker { margin-top: auto; }  /* centres the text above the button */
+  .intro-side--art  .intro-copy { right: 1.25rem; width: 52%; top: 30%; }
+  .intro-kicker { margin-top: auto; }  /* centres the text in the space above the button */
   .intro-cta { margin-top: auto; padding: 0.6rem 1rem; font-size: 0.72rem; letter-spacing: 0.05em; }
   .intro-tag, .intro-org { display: none; }
   .intro-role { font-size: clamp(1.15rem, 5.4vw, 1.5rem); }
   .intro-side--art .intro-role { font-size: clamp(1.6rem, 7.6vw, 2.1rem); }
 
-  /* Academic: photo at the right */
-  .intro-cutout { height: 74%; right: -6%; }
+  /* Academic: photo at the right, sized by the screen width so it is
+     never cut off at the edge */
+  .intro-cutout { height: min(72%, 74vw); right: 3vw; }
 
   /* Art: the painting at the left, larger and higher than before */
   .intro-frame { left: 4%; top: 7%; width: min(50vw, 28vh); animation-name: intro-pin-m; }
@@ -413,9 +414,11 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   .intro-caption { font-size: 0.85rem; bottom: 3px; }
   .intro-tape { height: 16px; top: -8px; }
 
-  .intro-splash--corner { width: 84px; left: auto; right: -5%; top: 50%; }
-  .intro-splash--top    { width: 96px; right: -10px; top: -86px; }
-  .intro-splash--under  { width: 104px; margin-left: -52px; top: calc(100% + 4px); }
+  /* Splashes towards the middle, filling the space between the
+     painting, the text and the button */
+  .intro-splash--corner { width: 88px; left: 32%; top: 72%; }
+  .intro-splash--top    { width: 92px; right: auto; left: 30%; top: -104px; }  /* right of the painting */
+  .intro-splash--under  { width: 104px; margin-left: -40px; top: calc(100% + 4px); }
 
   .intro-seam { display: none; }
 }
