@@ -1,10 +1,9 @@
 /* ================================================================
    INTRO.JS — first-visit split-screen intro
 
-   On a visitor's first page view of a session (and only when they
-   came to the plain address, not a shared #section/#project link),
-   the site opens on two halves side by side: the educator and the
-   painter. Choosing one grows it to fill the screen and opens the
+   Every visit to the plain address (not a shared #section/#project
+   link) opens on two halves side by side: the painter on the left and
+   the educator on the right, each with its text towards the middle. Choosing one grows it to fill the screen and opens the
    site in that profile. The nav logo brings the intro back.
 
    Whether it shows is decided in <head> (index.html) before the first
@@ -14,7 +13,6 @@
    ================================================================ */
 
 const Intro = (() => {
-  const SEEN_KEY = 'introSeen';
   let el = null;
   let leaving = false;
 
@@ -38,56 +36,55 @@ const Intro = (() => {
     ['&&',  '12%', '74%', '1.3rem', '18px'], ['0x1F','74%', '27%', '1rem',   '8px'],
     ['→',   '34%', '20%', '1.5rem', '22px'], ['[ ]', '90%', '62%', '1.4rem', '14px'],
   ];
-  /* [left, top, width, hue, depth] */
-  const SPLASHES = [
-    ['70%', '-6%', '190px', '0deg',    '22px'], ['-5%', '68%', '170px', '140deg', '16px'],
-    ['90%', '22%', '100px', '200deg',  '28px'], ['44%', '84%', '110px', '300deg', '12px'],
-  ];
+  /* The painting on the art half, looked up in the gallery data for its caption */
+  const PAINTING = { file: 'Child_Bird.jpg', src: 'images/intro/Painting_Birds.webp' };
 
   function markup() {
     const prof = PORTFOLIO_DATA.profile;
     const c = counts();
     const glyphs = GLYPHS.map(([t, x, y, s, d], n) =>
       `<span class="intro-glyph" style="--x:${x};--y:${y};--s:${s};--d:${d};--n:${n}">${t}</span>`).join('');
-    const splashes = SPLASHES.map(([x, y, w, h, d], n) =>
-      `<img class="intro-splash" src="images/color_splash.webp" alt="" style="--x:${x};--y:${y};--w:${w};--h:${h};--d:${d};--n:${n}"/>`).join('');
+    const art = (typeof DATA_ARTWORK !== 'undefined' && DATA_ARTWORK.find(a => a.file === PAINTING.file)) || {};
+    const caption = [art.title, art.medium && art.medium.replace(/ on canvas$/i, '').toLowerCase(), art.year].filter(Boolean).join(' · ');
+    /* "Ayan" sits fully on the left (art) half and "Sarkar" fully on the right */
+    const [first, ...rest] = prof.name.split(' ');
     return `
-      <div class="intro-name" id="intro-name">
-        <span class="intro-hello">Hello, I'm</span>
-        <span class="intro-fullname">${prof.name}</span>
+      <button type="button" class="intro-side intro-side--art" data-mode="art">
+        <span class="intro-bg" aria-hidden="true"><span class="intro-paper"></span></span>
+        <span class="intro-word intro-word--art" aria-hidden="true"><span class="intro-hello">Hello, I'm</span>${first}</span>
+        <span class="intro-frame" aria-hidden="true">
+          <img class="intro-splash intro-splash--under" src="images/intro/splash_sage.webp" alt=""/>
+          <span class="intro-card">
+            <span class="intro-tape"></span>
+            <img class="intro-painting" src="${PAINTING.src}" alt=""/>
+            <span class="intro-caption">${caption}</span>
+          </span>
+        </span>
+        <span class="intro-copy">
+          <img class="intro-splash intro-splash--top" src="images/intro/splash_warm.webp" alt="" aria-hidden="true"/>
+          <span class="intro-kicker">The Painter<span class="intro-num">01</span></span>
+          <span class="intro-role">${prof.art.eyebrow}<svg class="intro-stroke" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M4 14 C 70 4, 150 18, 220 8 S 290 10, 296 6"/></svg></span>
+          <span class="intro-tag">${prof.art.tagline}</span>
+          <span class="intro-stats">${stat(c.artworks, 'artworks')}${stat(c.wins ? c.wins + '×' : 0, 'champion')}${stat(4, 'mediums')}</span>
+          <span class="intro-cta">Enter Art Studio <span aria-hidden="true">→</span></span>
+        </span>
+      </button>
+
+      <div class="intro-seam" aria-hidden="true">
+        <span class="intro-or">choose a side</span>
       </div>
 
       <button type="button" class="intro-side intro-side--acad" data-mode="academic">
         <span class="intro-bg" aria-hidden="true"><span class="intro-grid"></span>${glyphs}</span>
+        <span class="intro-word intro-word--acad" aria-hidden="true">${rest.join(' ')}</span>
         <img class="intro-cutout" src="images/intro/Ayan_cutout.webp" alt=""/>
         <span class="intro-copy">
-          <span class="intro-kicker"><span class="intro-num">01</span>The Educator</span>
+          <span class="intro-kicker"><span class="intro-num">02</span>The Educator</span>
           <span class="intro-role">Lecturer in Computer Science &amp; Engineering</span>
           <span class="intro-org"><img src="images/GUB_leaf_Logo.webp" alt=""/>${prof.academic.subtitle}</span>
           <span class="intro-tag">${prof.academic.tagline}</span>
           <span class="intro-stats">${stat(c.sites, 'interactive course sites')}${stat(c.taught, 'courses taught')}${stat(c.projects, 'projects')}</span>
           <span class="intro-cta">Enter Academic Profile <span aria-hidden="true">→</span></span>
-        </span>
-      </button>
-
-      <div class="intro-seam" aria-hidden="true">
-        <span class="intro-medal"><img src="images/Ayan_Logo.webp" alt=""/></span>
-        <span class="intro-or">choose a side</span>
-      </div>
-
-      <button type="button" class="intro-side intro-side--art" data-mode="art">
-        <span class="intro-bg" aria-hidden="true"><span class="intro-paper"></span>${splashes}</span>
-        <span class="intro-frame" aria-hidden="true">
-          <span class="intro-tape"></span>
-          <img src="images/intro/Ayan_sketch.webp" alt=""/>
-          <span class="intro-caption">self-portrait · graphite</span>
-        </span>
-        <span class="intro-copy">
-          <span class="intro-kicker">The Painter<span class="intro-num">02</span></span>
-          <span class="intro-role">${prof.art.eyebrow}<svg class="intro-stroke" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M4 14 C 70 4, 150 18, 220 8 S 290 10, 296 6"/></svg></span>
-          <span class="intro-tag">${prof.art.tagline}</span>
-          <span class="intro-stats">${stat(c.artworks, 'artworks')}${stat(c.wins ? c.wins + '×' : 0, 'champion')}${stat(4, 'mediums')}</span>
-          <span class="intro-cta">Enter Art Studio <span aria-hidden="true">→</span></span>
         </span>
       </button>`;
   }
@@ -125,7 +122,7 @@ const Intro = (() => {
     el.tabIndex = -1;
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-modal', 'true');
-    el.setAttribute('aria-labelledby', 'intro-name');
+    el.setAttribute('aria-label', `Hello, I'm ${PORTFOLIO_DATA.profile.name}. Choose a profile.`);
     el.innerHTML = markup();
     document.body.appendChild(el);
     document.body.style.overflow = 'hidden';
@@ -142,7 +139,6 @@ const Intro = (() => {
   function choose(mode) {
     if (!el || leaving) return;
     leaving = true;
-    try { sessionStorage.setItem(SEEN_KEY, '1'); } catch (e) {}
 
     el.dataset.chosen = mode;
     el.classList.add('intro--leaving');

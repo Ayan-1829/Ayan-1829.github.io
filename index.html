@@ -100,14 +100,13 @@
   <link rel="stylesheet" href="css/components.css"/>
   <link rel="stylesheet" href="css/intro.css"/>
   <script>
-    /* First-visit intro (js/intro.js): decided before the first paint so
-       the page doesn't flash behind it. Not for shared #links, repeat
-       views in the same session, or search-engine crawlers. If the intro
+    /* Intro (js/intro.js): decided before the first paint so the page
+       doesn't flash behind it. Shown on every visit to the plain address,
+       but not for shared #links or search-engine crawlers. If the intro
        somehow never appears, the page is revealed after 4 seconds. */
     (function () {
       try {
-        if (location.hash || sessionStorage.getItem('introSeen') ||
-            /bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent)) return;
+        if (location.hash || /bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent)) return;
         var root = document.documentElement;
         root.classList.add('intro-pending');
         setTimeout(function () { if (!document.getElementById('intro')) root.classList.remove('intro-pending'); }, 4000);
