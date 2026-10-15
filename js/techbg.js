@@ -12,7 +12,7 @@
    ================================================================ */
 
 (function () {
-  const GRID = 26;           /* px between routing points */
+  const GRID = 22;           /* px between routing points */
   const GLOW = 150;          /* px: radius of the lit area around the pointer */
   const COLOURS = [[225, 201, 85], [74, 200, 255], [64, 220, 190], [170, 130, 255], [255, 130, 90]];
   /* 8 routing directions; a trace turns by one step (45°) at a time */
@@ -63,14 +63,14 @@
     const used = new Uint8Array(cols * rows);
     const free = (c, r) => c >= 0 && r >= 0 && c < cols && r < rows && !used[r * cols + c];
     traces = [];
-    const target = Math.round((cols * rows) / 34);
+    const target = Math.round((cols * rows) / 18);
     for (let tries = 0; tries < target * 6 && traces.length < target; tries++) {
       let c = Math.floor(Math.random() * cols), r = Math.floor(Math.random() * rows);
       if (!free(c, r)) continue;
       let d = Math.floor(Math.random() * 8);
       const cells = [[c, r]];
       used[r * cols + c] = 1;
-      const steps = 4 + Math.floor(Math.random() * 14);
+      const steps = 4 + Math.floor(Math.random() * 16);
       for (let s = 0; s < steps; s++) {
         if (s > 1 && Math.random() < 0.22) d = (d + (Math.random() < 0.5 ? 1 : 7)) % 8;
         const nc = c + DIRS[d][0], nr = r + DIRS[d][1];
@@ -93,7 +93,7 @@
       traces.push({ p, lens, total: lens[lens.length - 1] });
     }
     /* Close to the page colour, so the board never competes with the text */
-    drawBoard(base, 'rgba(70, 110, 170, 0.26)', 1);
+    drawBoard(base, 'rgba(70, 110, 170, 0.22)', 1);
     drawBoard(lit, 'rgba(110, 165, 230, 0.6)', 1.2);
     signals = [];
     pings = [];

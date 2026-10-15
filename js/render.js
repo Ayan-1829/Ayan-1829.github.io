@@ -177,7 +177,7 @@ const Render = {
     grid.innerHTML = projects.map((p, idx) => {
       if (SHELF_TYPES[p.type]) return shelfCardHTML(p, idx);
       const techPills = p.tech.map(t => `<span class="skill-pill" style="font-size:0.72rem;padding:0.2rem 0.6rem;">${t}</span>`).join('');
-      const bullets = p.bullets.map(b => `<li style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:0.25rem;">${b}</li>`).join('');
+      const bullets = p.bullets.map(b => `<li style="color:var(--muted);font-size:1rem;line-height:1.7;margin-bottom:0.25rem;">${b}</li>`).join('');
       /* stopPropagation so following a link doesn't also open the modal */
       const linksHTML = (p.links || []).filter(l => l.url).map(l =>
         `<a href="${l.url}" target="_blank" class="course-link-pill" onclick="event.stopPropagation()">${l.label} ↗</a>`).join('');
@@ -720,7 +720,7 @@ function openAchievementModal(index) {
   const imgsHTML = images.map(img =>
     `<figure style="margin:0 0 1rem;">
        <img src="${img.file}" alt="${img.caption || entry.role}" style="width:100%;max-height:400px;object-fit:contain;border-radius:8px;"/>
-       ${img.caption ? `<figcaption style="text-align:center;color:var(--muted);font-size:0.82rem;margin-top:0.4rem;">${img.caption}</figcaption>` : ''}
+       ${img.caption ? `<figcaption style="text-align:center;color:var(--muted);font-size:0.9rem;margin-top:0.4rem;">${img.caption}</figcaption>` : ''}
      </figure>`
   ).join('');
 
@@ -977,9 +977,9 @@ function openProjectModal(index, opts) {
   const linksHTML = (p.links || []).filter(l => l.url).map(l =>
     `<a href="${l.url}" target="_blank" class="course-link-pill">${l.label} ↗</a>`).join('');
   const bulletsHTML = (p.bullets || []).map(bul =>
-    `<li style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:0.35rem;">${bul}</li>`).join('');
+    `<li style="color:var(--muted);font-size:1rem;line-height:1.7;margin-bottom:0.35rem;">${bul}</li>`).join('');
   const infoHTML = (p.info || []).map(s =>
-    `<p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin:0.4rem 0;">${s}</p>`).join('');
+    `<p style="color:var(--muted);font-size:1rem;line-height:1.7;margin:0.4rem 0;">${s}</p>`).join('');
   const videosHTML = (p.videos || []).map(videoFacadeHTML).join('');
 
   const modalIconHTML = p.icon

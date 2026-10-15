@@ -73,7 +73,7 @@ body.art-mode .section-title {
 body.art-mode .card-title { font-family: var(--font-hand); font-size: 1.4rem; }
 
 .card-sub  { font-size: 0.82rem; color: var(--accent); margin-bottom: 0.8rem; letter-spacing: 0.05em; transition: color var(--theme-transition); }
-.card-desc { font-size: 0.9rem;  color: var(--muted);  line-height: 1.7; transition: color var(--theme-transition); }
+.card-desc { font-size: 1rem;  color: var(--muted);  line-height: 1.7; transition: color var(--theme-transition); }
 .card-year { position: absolute; top: 1.2rem; right: 1.2rem; font-size: 0.75rem; color: var(--border); letter-spacing: 0.08em; }
 
 /* ── Timeline ─────────────────────────────────── */
@@ -132,7 +132,7 @@ body.art-mode .timeline-role { font-family: var(--font-hand); font-size: 1.4rem;
 
 .timeline-org  { color: var(--accent); font-size: 0.9rem; margin-bottom: 0.25rem; font-style: italic; transition: color var(--theme-transition); }
 .timeline-date { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.8rem; transition: color var(--theme-transition); }
-.timeline-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.7; transition: color var(--theme-transition); }
+.timeline-desc { font-size: 1rem; color: var(--muted); line-height: 1.7; transition: color var(--theme-transition); }
 
 /* ── Skill Pills ──────────────────────────────── */
 .skills-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
@@ -152,7 +152,7 @@ body.art-mode .timeline-role { font-family: var(--font-hand); font-size: 1.4rem;
 
 /* ── Gallery Masonry ──────────────────────────── */
 .gallery-intro {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: var(--muted);
   margin-bottom: 2rem;
   font-style: italic;
@@ -183,7 +183,7 @@ body.art-mode .timeline-role { font-family: var(--font-hand); font-size: 1.4rem;
 }
 .gallery-subtitle-desc {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 1rem;
   margin-top: 0.2rem;
 }
 .gallery-childhood-block {
@@ -263,7 +263,7 @@ body.art-mode .timeline-role { font-family: var(--font-hand); font-size: 1.4rem;
   transition: color var(--theme-transition);
 }
 
-.contact-detail p { font-size: 0.92rem; color: var(--muted); transition: color var(--theme-transition); }
+.contact-detail p { font-size: 1.02rem; color: var(--muted); transition: color var(--theme-transition); }
 
 /* ── Social links: colored real-app logos, no wrapper circle ──── */
 .social-icon-link {
@@ -616,7 +616,7 @@ body.art-mode .course-modal-title { font-family: var(--font-hand); font-size: 2r
 .course-modal-section h3 { font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
 
 .course-topics-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; }
-.course-topics-list li { font-size: 0.9rem; color: var(--text); padding: 0.5rem 0.8rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; transition: background var(--theme-transition), border-color var(--theme-transition), color var(--theme-transition); }
+.course-topics-list li { font-size: 1rem; color: var(--text); padding: 0.5rem 0.8rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; transition: background var(--theme-transition), border-color var(--theme-transition), color var(--theme-transition); }
 .course-topics-list li::before { content: ''; }
 
 .course-links-row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
@@ -770,7 +770,7 @@ body.art-mode .uni-group-name {
 }
 
 .topic-name {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text);
   font-weight: 600;
   display: block;
@@ -968,7 +968,7 @@ body.art-mode .uni-group-name {
 /* Full width, starting at the same left edge as the logo — only the
    head block is indented. */
 .entry-desc {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--muted);
   line-height: 1.8;
   margin-top: 1rem;
@@ -996,7 +996,7 @@ body.art-mode .uni-group-name {
    the surrounding paragraph text. */
 .entry-highlight-value {
   display: block;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--muted);
   line-height: 1.7;
   transition: color var(--theme-transition);
@@ -1014,14 +1014,14 @@ body.art-mode .uni-group-name {
 /* Full container width so the right edge lines up with every other
    section (it was capped at 760px and stopped ~244px short). */
 .about-text {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   line-height: 1.9;
   color: var(--muted);
   transition: color var(--theme-transition);
 }
 
 .about-quote {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   line-height: 2;
   color: var(--muted);
   font-family: 'Lora', serif;
@@ -1536,7 +1536,7 @@ img,
 }
 .cm-card:hover .cm-card-title { color: var(--accent2); }
 
-.cm-card-desc { font-size: 0.84rem; line-height: 1.6; color: var(--muted); margin: 0; }
+.cm-card-desc { font-size: 0.94rem; line-height: 1.6; color: var(--muted); margin: 0; }
 
 .cm-card-open { margin-top: auto; font-size: 0.8rem; color: var(--accent); letter-spacing: 0.04em; }
 .cm-card:hover .cm-card-open { text-decoration: underline; }
