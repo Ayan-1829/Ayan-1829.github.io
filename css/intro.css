@@ -110,19 +110,19 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.42 0 0 0 0 0.25 0 0 0 0.22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Two splashes in natural pigments (terracotta, ochre, sage): one
-   above the art designation, one peeking out from under the painting.
-   z-index -1 keeps each behind the text or paper it sits beside. */
+/* Three paint splashes in their original colours: one in the top
+   corner, one above the art designation and one below the painting.
+   Shown no larger than their 360px source so they stay sharp; z-index
+   -1 keeps the last two behind the text or paper they sit beside. */
 .intro-splash {
   position: absolute;
   z-index: -1;
   pointer-events: none;
-  translate: calc(var(--mx, 0) * 18px) calc(var(--my, 0) * 18px);
-  transition: translate 0.5s ease-out;
   animation: intro-splat 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-.intro-splash--top   { width: 210px; right: -24px; top: -205px; animation-delay: 0.9s; }
-.intro-splash--under { width: 250px; left: 50%; bottom: -128px; margin-left: -125px; animation-delay: 1.05s; }
+.intro-splash--corner { z-index: 0; width: 200px; left: 3%; top: 3%; animation-delay: 0.75s; }
+.intro-splash--top    { width: 190px; right: -20px; top: -190px; animation-delay: 0.9s; }
+.intro-splash--under  { width: 200px; left: 50%; top: calc(100% + 6px); margin-left: -100px; animation-delay: 1.05s; }
 
 /* ── People ─────────────────────────────────────────────────── */
 .intro-cutout {
@@ -277,22 +277,6 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 .intro-tag { font-size: 0.95rem; line-height: 1.65; opacity: 0.82; }
 .intro-side--art .intro-tag { font-family: var(--font-italic); font-style: italic; color: #8a6c55; opacity: 1; }
 
-.intro-stats { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.intro-side--art .intro-stats { justify-content: flex-end; }
-.intro-stat {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  white-space: nowrap;
-}
-.intro-stat b { font-family: var(--font-display); font-size: 1.05rem; }
-.intro-side--acad .intro-stat { background: rgba(74, 144, 217, 0.14); border: 1px solid rgba(74, 144, 217, 0.35); color: #cfe0f7; }
-.intro-side--acad .intro-stat b { color: #e1c955; }
-.intro-side--art .intro-stat { background: rgba(255, 250, 240, 0.65); border: 1px solid rgba(174, 108, 37, 0.35); color: #7f4e12; }
-.intro-side--art .intro-stat b { color: #c4622d; }
 
 .intro-cta {
   display: inline-flex;
@@ -331,18 +315,6 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 }
 .intro-word--art  { right: 0.16em; color: #10223f; }
 .intro-word--acad { left: 0.16em;  color: #f3ead6; }
-.intro-hello {
-  position: absolute;
-  right: 0.1em;
-  bottom: 100%;
-  margin-bottom: 0.15em;
-  font-family: var(--font-hand);
-  font-size: clamp(1.3rem, 2vw, 1.8rem);
-  font-weight: 400;
-  letter-spacing: 0;
-  color: #c4622d;
-  animation: intro-fade 0.8s ease 0.6s both;
-}
 .intro--leaving .intro-word { opacity: 0; transition: opacity 0.35s ease; }
 
 /* ── Seam: just a small prompt at the bottom ─────────────────── */
@@ -386,7 +358,7 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 @keyframes intro-fade  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes intro-rise  { from { opacity: 0; transform: translateY(10%); } to { opacity: 1; transform: none; } }
 @keyframes intro-pin   { from { opacity: 0; transform: translateY(-40%) rotate(-14deg) scale(0.9); } to { opacity: 1; transform: translateY(-54%) rotate(-4deg); } }
-@keyframes intro-splat { from { opacity: 0; transform: scale(0.2) rotate(-30deg); } to { opacity: 0.92; transform: none; } }
+@keyframes intro-splat { from { opacity: 0; transform: scale(0.2) rotate(-30deg); } to { opacity: 1; transform: none; } }
 @keyframes intro-name  { from { opacity: 0; letter-spacing: 0.35em; filter: blur(8px); } to { opacity: 1; letter-spacing: 0.01em; filter: none; } }
 @keyframes intro-draw  { to { stroke-dashoffset: 0; } }
 @keyframes intro-float { from { transform: translateY(-10px) rotate(-4deg); } to { transform: translateY(12px) rotate(4deg); } }
@@ -399,25 +371,23 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 
   /* Stacked, paint on top: "Ayan" tops the upper half, "Sarkar" the lower */
   .intro-word { font-size: clamp(2.2rem, 11vw, 3.2rem); }
-  .intro-word--art  { top: 5.4vh; right: auto; left: 1.25rem; }
+  .intro-word--art  { top: 2.4vh; right: auto; left: 1.25rem; }
   .intro-word--acad { top: 2.4vh; left: 1.25rem; }
-  .intro-hello { right: auto; left: 0.05em; font-size: 1.1rem; }
 
   .intro-cutout { height: 41vh; right: -4%; }
   .intro-copy { bottom: auto; top: 50%; translate: 0 -38%; gap: 0.5rem; max-width: 60%; }
   .intro-side--acad .intro-copy { top: 58%; }
-  .intro-side--art  .intro-copy { top: 45%; translate: 0 -50%; }
+  .intro-side--art  .intro-copy { top: 54%; translate: 0 -50%; }
   .intro-tag, .intro-org { display: none; }
   .intro-role { font-size: 1.3rem; }
   .intro-side--art .intro-role { font-size: 2rem; }
-  .intro-stat { font-size: 0.7rem; padding: 0.25rem 0.55rem; }
-  .intro-stat b { font-size: 0.9rem; }
   .intro-cta { padding: 0.6rem 1rem; font-size: 0.74rem; margin-top: 0.15rem; }
 
-  .intro-splash--top   { width: 120px; right: -12px; top: -116px; }
+  .intro-splash--corner { width: 96px; left: 30%; top: -3%; }
+  .intro-splash--top    { width: 120px; right: -12px; top: -116px; }
   .intro-stroke { left: 22%; width: 78%; }
-  .intro-splash--under { width: 140px; bottom: -74px; margin-left: -70px; }
-  .intro-frame { left: 5%; top: 80%; width: min(40vw, 30vh); }  /* lower left, clear of the text */
+  .intro-splash--under { width: 110px; margin-left: -55px; top: calc(100% + 2px); }
+  .intro-frame { left: 5%; top: 58%; width: min(40vw, 30vh); }  /* left, clear of the text */
   .intro-card { padding: 7px 7px 26px; }
   .intro-caption { font-size: 0.9rem; bottom: 4px; }
   .intro-tape { height: 18px; top: -9px; }
@@ -425,20 +395,16 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   .intro-seam { display: none; }
 }
 
-/* Short laptop screens: smaller name, no tagline, so the text fits
-   between the name and the bottom without overlapping either */
+/* Short laptop screens: a smaller name so the text fits between it
+   and the bottom without overlapping either */
 @media (min-width: 821px) and (max-height: 860px) {
   .intro-word { top: 10vh; font-size: clamp(2.6rem, min(6.4vw, 10.5vh), 6.4rem); }
   .intro-copy { bottom: 8vh; gap: 0.7rem; }
-  .intro-tag { display: none; }
   .intro-role { font-size: clamp(1.4rem, min(2.4vw, 4.2vh), 2.3rem); }
   .intro-side--art .intro-role { font-size: clamp(2rem, min(3.4vw, 6vh), 3.2rem); }
-  .intro-splash--top { width: 160px; top: -150px; }
+  .intro-splash--top { width: 160px; top: -160px; }
+  .intro-splash--corner { width: 170px; }
   .intro-cutout { height: min(66vh, 760px); }
-}
-
-@media (max-width: 820px) and (max-height: 700px) {
-  .intro-stats { display: none; }
 }
 
 /* ── Reduced motion: no slides, drifting or spinning ────────── */

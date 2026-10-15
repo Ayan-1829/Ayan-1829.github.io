@@ -3,30 +3,17 @@
 
    Every visit to the plain address (not a shared #section/#project
    link) opens on two halves side by side: the painter on the left and
-   the educator on the right, each with its text towards the middle. Choosing one grows it to fill the screen and opens the
-   site in that profile. The nav logo brings the intro back.
+   the educator on the right, each with its text towards the middle.
+   Choosing one grows it to fill the screen and opens the site in that
+   profile. The nav logo brings the intro back.
 
    Whether it shows is decided in <head> (index.html) before the first
    paint, which adds html.intro-pending; css/intro.css has the styles.
-   Numbers on the cards are counted from the data files, so they stay
-   right as courses, projects and paintings are added.
    ================================================================ */
 
 const Intro = (() => {
   let el = null;
   let leaving = false;
-
-  function counts() {
-    const projects = (typeof DATA_PROJECTS !== 'undefined') ? DATA_PROJECTS : [];
-    const cm = projects.find(p => p.type === 'courseMaterials');
-    const sites = cm ? (cm.institutions || []).reduce((n, i) => n + (i.courses || []).length, 0) : 0;
-    const taught = (typeof DATA_COURSES !== 'undefined') ? DATA_COURSES.reduce((n, u) => n + (u.courses || []).length, 0) : 0;
-    const artworks = (typeof DATA_ARTWORK !== 'undefined') ? DATA_ARTWORK.length : 0;
-    const wins = (typeof DATA_ART_JOURNEY !== 'undefined') ? DATA_ART_JOURNEY.filter(j => /champion/i.test(j.role || '')).length : 0;
-    return { sites, taught, projects: projects.length, artworks, wins };
-  }
-
-  const stat = (n, label) => n ? `<span class="intro-stat"><b>${n}</b>${label}</span>` : '';
 
   /* [text, left, top, size, depth] — positions are % of the half */
   const GLYPHS = [
@@ -41,7 +28,6 @@ const Intro = (() => {
 
   function markup() {
     const prof = PORTFOLIO_DATA.profile;
-    const c = counts();
     const glyphs = GLYPHS.map(([t, x, y, s, d], n) =>
       `<span class="intro-glyph" style="--x:${x};--y:${y};--s:${s};--d:${d};--n:${n}">${t}</span>`).join('');
     const art = (typeof DATA_ARTWORK !== 'undefined' && DATA_ARTWORK.find(a => a.file === PAINTING.file)) || {};
@@ -50,10 +36,10 @@ const Intro = (() => {
     const [first, ...rest] = prof.name.split(' ');
     return `
       <button type="button" class="intro-side intro-side--art" data-mode="art">
-        <span class="intro-bg" aria-hidden="true"><span class="intro-paper"></span></span>
-        <span class="intro-word intro-word--art" aria-hidden="true"><span class="intro-hello">Hello, I'm</span>${first}</span>
+        <span class="intro-bg" aria-hidden="true"><span class="intro-paper"></span><img class="intro-splash intro-splash--corner" src="images/intro/splash.webp" alt=""/></span>
+        <span class="intro-word intro-word--art" aria-hidden="true">${first}</span>
         <span class="intro-frame" aria-hidden="true">
-          <img class="intro-splash intro-splash--under" src="images/intro/splash_sage.webp" alt=""/>
+          <img class="intro-splash intro-splash--under" src="images/intro/splash.webp" alt=""/>
           <span class="intro-card">
             <span class="intro-tape"></span>
             <img class="intro-painting" src="${PAINTING.src}" alt=""/>
@@ -61,11 +47,10 @@ const Intro = (() => {
           </span>
         </span>
         <span class="intro-copy">
-          <img class="intro-splash intro-splash--top" src="images/intro/splash_warm.webp" alt="" aria-hidden="true"/>
+          <img class="intro-splash intro-splash--top" src="images/intro/splash.webp" alt="" aria-hidden="true"/>
           <span class="intro-kicker">The Painter<span class="intro-num">01</span></span>
           <span class="intro-role">${prof.art.eyebrow}<svg class="intro-stroke" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M4 14 C 70 4, 150 18, 220 8 S 290 10, 296 6"/></svg></span>
           <span class="intro-tag">${prof.art.tagline}</span>
-          <span class="intro-stats">${stat(c.artworks, 'artworks')}${stat(c.wins ? c.wins + '×' : 0, 'champion')}${stat(4, 'mediums')}</span>
           <span class="intro-cta">Enter Art Studio <span aria-hidden="true">→</span></span>
         </span>
       </button>
@@ -83,7 +68,6 @@ const Intro = (() => {
           <span class="intro-role">Lecturer in Computer Science &amp; Engineering</span>
           <span class="intro-org"><img src="images/GUB_leaf_Logo.webp" alt=""/>${prof.academic.subtitle}</span>
           <span class="intro-tag">${prof.academic.tagline}</span>
-          <span class="intro-stats">${stat(c.sites, 'interactive course sites')}${stat(c.taught, 'courses taught')}${stat(c.projects, 'projects')}</span>
           <span class="intro-cta">Enter Academic Profile <span aria-hidden="true">→</span></span>
         </span>
       </button>`;
@@ -122,7 +106,7 @@ const Intro = (() => {
     el.tabIndex = -1;
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-modal', 'true');
-    el.setAttribute('aria-label', `Hello, I'm ${PORTFOLIO_DATA.profile.name}. Choose a profile.`);
+    el.setAttribute('aria-label', `${PORTFOLIO_DATA.profile.name}: choose a profile`);
     el.innerHTML = markup();
     document.body.appendChild(el);
     document.body.style.overflow = 'hidden';
