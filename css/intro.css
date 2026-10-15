@@ -117,14 +117,21 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 .intro-splash {
   position: absolute;
   z-index: -1;
-  pointer-events: none;
+  pointer-events: auto;  /* hoverable even inside .intro-bg */
+  filter: hue-rotate(var(--hue, 0deg));
+  transition: transform 0.25s ease-out, filter 0.3s ease;
   animation: intro-splat 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+/* Hover: the splash tilts towards the pointer (js/intro.js sets --rx and
+   --ry), lifts and casts a shadow, like a blob of paint in 3D */
+.intro-splash:hover {
+  transform: perspective(520px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(40px) scale(1.12);
+  filter: hue-rotate(var(--hue, 0deg)) saturate(1.2) drop-shadow(0 18px 16px rgba(90, 50, 10, 0.35));
 }
 .intro-splash--corner { z-index: 0; width: 200px; left: 3%; top: 3%; animation-delay: 0.75s; }
 /* A small hue shift each, so the three read as different throws of paint */
-.intro-splash--corner { filter: none; }
-.intro-splash--top    { filter: hue-rotate(35deg); }
-.intro-splash--under  { filter: hue-rotate(-40deg); }
+.intro-splash--top    { --hue: 35deg; }
+.intro-splash--under  { --hue: -40deg; }
 .intro-splash--top    { width: 190px; right: -20px; top: -190px; animation-delay: 0.9s; }
 .intro-splash--under  { width: 200px; left: 50%; top: calc(100% + 6px); margin-left: -100px; animation-delay: 1.05s; }
 
@@ -145,8 +152,8 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 .intro-frame {
   position: absolute;
   left: 8%;
-  top: 55%;
-  width: min(40%, 52vh, 460px);
+  top: 48%;
+  width: min(44%, 58vh, 520px);
   transform: translateY(-54%) rotate(-4deg);
   transition: transform 0.8s var(--i-ease);
   animation: intro-pin 1.1s var(--i-ease) 0.55s both;
@@ -362,7 +369,7 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 @keyframes intro-fade  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes intro-rise  { from { opacity: 0; transform: translateY(10%); } to { opacity: 1; transform: none; } }
 @keyframes intro-pin   { from { opacity: 0; transform: translateY(-40%) rotate(-14deg) scale(0.9); } to { opacity: 1; transform: translateY(-54%) rotate(-4deg); } }
-@keyframes intro-splat { from { opacity: 0; transform: scale(0.2) rotate(-30deg); } to { opacity: 1; transform: none; } }
+@keyframes intro-splat { from { opacity: 0; scale: 0.2; rotate: -30deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
 @keyframes intro-name  { from { opacity: 0; letter-spacing: 0.35em; filter: blur(8px); } to { opacity: 1; letter-spacing: 0.01em; filter: none; } }
 @keyframes intro-draw  { to { stroke-dashoffset: 0; } }
 @keyframes intro-float { from { transform: translateY(-10px) rotate(-4deg); } to { transform: translateY(12px) rotate(4deg); } }
@@ -397,35 +404,30 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   }
   .intro--leaving .intro-name-m { opacity: 0; transition: opacity 0.35s ease; }
 
-  /* In each half the text and the picture sit side by side, both
-     placed from the centre line rather than from the screen edges: the
-     text runs up to the middle from one side and the picture starts at
-     the middle on the other. Each button is centred at the bottom. */
-  .intro-copy { left: 0; right: 0; bottom: 2.8vh; width: auto; max-width: none; padding: 0 1.25rem; gap: 0.5rem; align-items: stretch; }
-  .intro-side--acad .intro-copy { top: calc(2vh + min(11vw, 6vh) + 2.4vh); }
-  .intro-side--art  .intro-copy { top: 46%; }
-  .intro-side--acad .intro-kicker,
-  .intro-side--acad .intro-role { margin-right: 47%; text-align: right; justify-content: flex-end; }
-  .intro-side--art  .intro-kicker,
-  .intro-side--art  .intro-role { margin-left: 47%; text-align: left; justify-content: flex-start; }
+  /* In each half the text and the picture sit side by side. The text
+     column runs to the bottom of the half, where its button sits. */
+  .intro-copy { bottom: 2.8vh; gap: 0.5rem; max-width: none; }
+  .intro-side--acad .intro-copy { left: 1.25rem; width: 56%; top: calc(2vh + min(11vw, 6vh) + 2.4vh); }
+  .intro-side--art  .intro-copy { right: 1.25rem; width: 52%; top: 46%; }
   .intro-side--acad .intro-kicker { margin-top: auto; }  /* centres the text above the button */
-  .intro-cta { align-self: center; margin-top: auto; padding: 0.6rem 1.1rem; font-size: 0.72rem; letter-spacing: 0.05em; }
+  .intro-cta { margin-top: auto; padding: 0.6rem 1rem; font-size: 0.72rem; letter-spacing: 0.05em; }
   .intro-tag, .intro-org { display: none; }
   .intro-role { font-size: clamp(1.15rem, 5.4vw, 1.5rem); }
   .intro-side--art .intro-role { font-size: clamp(1.6rem, 7.6vw, 2.1rem); }
 
-  /* Academic: the photo starts at the centre line, sized by the width */
-  .intro-cutout { height: min(72%, 74vw); left: 50%; right: auto; margin-left: -3vw; }
+  /* Academic: photo at the right, a little in from the edge, sized by
+     the screen width so it is never cut off */
+  .intro-cutout { height: min(72%, 74vw); right: 8vw; }
 
-  /* Art: the painting ends at the centre line, larger and higher */
-  .intro-frame { left: auto; right: 50%; margin-right: -2vw; top: 7%; width: min(48vw, 28vh); animation-name: intro-pin-m; }
+  /* Art: the painting at the left, a little in from the edge */
+  .intro-frame { left: 8%; top: 7%; width: min(50vw, 26vh); animation-name: intro-pin-m; }
   .intro-card { padding: 7px 7px 24px; }
   .intro-caption { font-size: 0.85rem; bottom: 3px; }
   .intro-tape { height: 16px; top: -8px; }
 
   /* Two splashes: one just above the text, one below the painting */
   .intro-splash--corner { display: none; }
-  .intro-splash--top    { width: 96px; left: 62%; right: auto; top: -96px; }
+  .intro-splash--top    { width: 96px; right: 0; top: -100px; }
   .intro-splash--under  { width: 104px; margin-left: -52px; top: calc(100% + 4px); }
 
   .intro-seam { display: none; }
@@ -448,5 +450,6 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 @media (prefers-reduced-motion: reduce) {
   .intro *, .intro *::before, .intro { animation-duration: 0.01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; }
   .intro-side, .intro-cutout, .intro-frame, .intro-grid, .intro-glyph, .intro-splash { transition: none !important; }
+  .intro-splash:hover { transform: none; }
   .intro-stroke path { stroke-dashoffset: 0; }
 }

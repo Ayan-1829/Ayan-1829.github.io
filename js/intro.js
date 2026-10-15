@@ -77,8 +77,14 @@ const Intro = (() => {
       </button>`;
   }
 
-  /* The mouse nudges each half's background a little (parallax) */
+  /* The mouse nudges each half's background a little (parallax), and
+     tilts a hovered paint splash towards the pointer */
   function onMove(e) {
+    if (e.target.classList && e.target.classList.contains('intro-splash')) {
+      const b = e.target.getBoundingClientRect();
+      e.target.style.setProperty('--rx', (((e.clientY - b.top) / b.height - 0.5) * -40).toFixed(1) + 'deg');
+      e.target.style.setProperty('--ry', (((e.clientX - b.left) / b.width - 0.5) * 40).toFixed(1) + 'deg');
+    }
     const side = e.target.closest && e.target.closest('.intro-side');
     if (!side) return;
     const r = side.getBoundingClientRect();
