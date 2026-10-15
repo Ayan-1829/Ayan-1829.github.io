@@ -114,31 +114,47 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
    corner, one above the art designation and one below the painting.
    Shown no larger than their 360px source so they stay sharp; z-index
    -1 keeps the last two behind the text or paper they sit beside. */
+/* 3D: every splash tilts slowly on its own (--wx/--wy, each at its own
+   pace) and, on hover, also towards the pointer (--rx/--ry, set by
+   js/intro.js), lifting with a deeper shadow. Registering the custom
+   properties lets them animate and transition smoothly. */
+@property --wx   { syntax: '<angle>';  inherits: false; initial-value: 0deg; }
+@property --wy   { syntax: '<angle>';  inherits: false; initial-value: 0deg; }
+@property --rx   { syntax: '<angle>';  inherits: false; initial-value: 0deg; }
+@property --ry   { syntax: '<angle>';  inherits: false; initial-value: 0deg; }
+@property --lift { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --grow { syntax: '<number>'; inherits: false; initial-value: 1; }
+
 .intro-splash {
   position: absolute;
   z-index: -1;
   pointer-events: auto;  /* hoverable even inside .intro-bg */
-  filter: hue-rotate(var(--hue, 0deg));
-  transition: transform 0.25s ease-out, filter 0.3s ease;
-  animation: intro-splat 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform: perspective(560px) rotateX(calc(var(--wx) + var(--rx))) rotateY(calc(var(--wy) + var(--ry))) translateZ(var(--lift)) scale(var(--grow));
+  filter: hue-rotate(var(--hue, 0deg)) drop-shadow(3px 10px 8px rgba(90, 50, 10, 0.2));
+  transition: --rx 0.25s ease-out, --ry 0.25s ease-out, --lift 0.3s ease, --grow 0.3s ease, filter 0.3s ease;
+  animation:
+    intro-splat 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) var(--splat-delay, 0.8s) both,
+    intro-wobble var(--wob, 7s) ease-in-out var(--wob-delay, 0s) infinite alternate;
 }
-/* Hover: the splash tilts towards the pointer (js/intro.js sets --rx and
-   --ry), lifts and casts a shadow, like a blob of paint in 3D */
 .intro-splash:hover {
-  transform: perspective(520px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(40px) scale(1.12);
-  filter: hue-rotate(var(--hue, 0deg)) saturate(1.2) drop-shadow(0 18px 16px rgba(90, 50, 10, 0.35));
+  --lift: 44px;
+  --grow: 1.12;
+  filter: hue-rotate(var(--hue, 0deg)) saturate(1.2) drop-shadow(6px 22px 16px rgba(90, 50, 10, 0.35));
 }
-.intro-splash--corner { z-index: 0; width: 200px; left: 3%; top: 3%; animation-delay: 0.75s; }
+.intro-splash--corner { z-index: 0; width: 200px; left: 3%; top: 3%; --splat-delay: 0.75s; }
 /* A small hue shift each, so the three read as different throws of paint */
-.intro-splash--top    { --hue: 35deg; }
-.intro-splash--under  { --hue: -40deg; }
-.intro-splash--top    { width: 190px; right: -20px; top: -190px; animation-delay: 0.9s; }
-.intro-splash--under  { width: 200px; left: 50%; top: calc(100% + 6px); margin-left: -100px; animation-delay: 1.05s; }
+.intro-splash--corner { --wob: 7s; }
+.intro-splash--top    { --hue: 35deg;  --wob: 5.5s; --wob-delay: -2s; }
+.intro-splash--under  { --hue: -40deg; --wob: 8.5s; --wob-delay: -4s; }
+.intro-splash--top    { width: 190px; right: -20px; top: -190px; --splat-delay: 0.9s; }
+.intro-splash--under  { width: 200px; left: 50%; top: calc(100% + 6px); margin-left: -100px; --splat-delay: 1.05s; }
 
 /* ── People ─────────────────────────────────────────────────── */
 .intro-cutout {
   position: absolute;
-  right: 0;
+  /* Pinned to the seam: a shrinking half hides part of the photo
+     instead of pushing it into the text. At rest it meets the edge. */
+  left: calc(50vw - 0.6 * min(70vh, 760px, 48vw));
   bottom: 0;
   height: min(70vh, 760px, 48vw);  /* 48vw: on near-square screens it scales with the width instead of running off the edge */
   width: auto;
@@ -151,9 +167,10 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 
 .intro-frame {
   position: absolute;
-  left: 8%;
+  /* Pinned to the seam, just outside the text column */
+  right: calc(clamp(1.5rem, 5vw, 5rem) + min(400px, 21vw) - 2vw);
   top: 48%;
-  width: min(44%, 58vh, 520px);
+  width: min(22vw, 58vh, 520px);
   transform: translateY(-54%) rotate(-4deg);
   transition: transform 0.8s var(--i-ease);
   animation: intro-pin 1.1s var(--i-ease) 0.55s both;
@@ -201,7 +218,7 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  max-width: min(400px, 42%);
+  max-width: min(400px, 21vw);  /* vw, not %, so hovering a half never re-wraps the text */
 }
 .intro-side--acad .intro-copy { left: clamp(1.5rem, 5vw, 5rem); align-items: flex-start; }
 .intro-side--art  .intro-copy { right: clamp(1.5rem, 5vw, 5rem); align-items: flex-end; }
@@ -216,13 +233,13 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   background: linear-gradient(90deg, rgba(11, 22, 40, 0.85) 0%, rgba(11, 22, 40, 0.35) 45%, transparent 65%);
 }
 
-.intro-copy > * { animation: intro-up 0.8s var(--i-ease) both; }
-.intro-copy > :nth-child(1) { animation-delay: 0.70s; }
-.intro-copy > :nth-child(2) { animation-delay: 0.78s; }
-.intro-copy > :nth-child(3) { animation-delay: 0.86s; }
-.intro-copy > :nth-child(4) { animation-delay: 0.94s; }
-.intro-copy > :nth-child(5) { animation-delay: 1.02s; }
-.intro-copy > :nth-child(6) { animation-delay: 1.10s; }
+.intro-copy > :not(.intro-splash) { animation: intro-up 0.8s var(--i-ease) both; }
+.intro-copy > :not(.intro-splash):nth-child(1) { animation-delay: 0.70s; }
+.intro-copy > :not(.intro-splash):nth-child(2) { animation-delay: 0.78s; }
+.intro-copy > :not(.intro-splash):nth-child(3) { animation-delay: 0.86s; }
+.intro-copy > :not(.intro-splash):nth-child(4) { animation-delay: 0.94s; }
+.intro-copy > :not(.intro-splash):nth-child(5) { animation-delay: 1.02s; }
+.intro-copy > :not(.intro-splash):nth-child(6) { animation-delay: 1.10s; }
 
 .intro-kicker {
   display: inline-flex;
@@ -255,6 +272,7 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   font-weight: 700;
   line-height: 1;
   color: #7f4e12;
+  margin-bottom: 0.3em;  /* room for the wavy stroke */
 }
 .intro-stroke {
   position: absolute;
@@ -290,24 +308,35 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 
 
 .intro-cta {
+  --glow: 225, 201, 85;
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.4rem;
-  padding: 0.8rem 1.4rem;
+  gap: 0.7rem;
+  margin-top: 0.5rem;
+  padding: 0.95rem 1.7rem;
   border-radius: 999px;
-  font-size: 0.86rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
-  transition: gap 0.3s ease, box-shadow 0.3s ease;
+  transition: gap 0.3s ease, transform 0.3s ease;
+  animation: intro-up 0.8s var(--i-ease) 1.1s both, intro-glow 2.6s ease-in-out 2s infinite;
 }
-.intro-side--acad .intro-cta { background: #e1c955; color: #0d1b2e; box-shadow: 0 8px 26px rgba(225, 201, 85, 0.25); }
-.intro-side--art  .intro-cta { background: #c4622d; color: #fff8ec; box-shadow: 0 8px 26px rgba(196, 98, 45, 0.3); }
-.intro-side:hover .intro-cta { gap: 1rem; }
-.intro-side--acad:hover .intro-cta { box-shadow: 0 10px 34px rgba(225, 201, 85, 0.45); }
-.intro-side--art:hover  .intro-cta { box-shadow: 0 10px 34px rgba(196, 98, 45, 0.5); }
+/* A light sheen that sweeps across every few seconds */
+.intro-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+  translate: -120% 0;
+  animation: intro-shine 4.5s ease-in-out 2.4s infinite;
+}
+.intro-side--acad .intro-cta { background: #e1c955; color: #0d1b2e; }
+.intro-side--art  .intro-cta { --glow: 196, 98, 45; background: #c4622d; color: #fff8ec; }
+.intro-side:hover .intro-cta { gap: 1.1rem; transform: translateY(-2px) scale(1.04); }
 
 /* ── Name: "Ayan" on the left (art) half, "Sarkar" on the right ─
    Each word belongs to its half, so it moves with the seam when a
@@ -370,6 +399,17 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
 @keyframes intro-rise  { from { opacity: 0; transform: translateY(10%); } to { opacity: 1; transform: none; } }
 @keyframes intro-pin   { from { opacity: 0; transform: translateY(-40%) rotate(-14deg) scale(0.9); } to { opacity: 1; transform: translateY(-54%) rotate(-4deg); } }
 @keyframes intro-splat { from { opacity: 0; scale: 0.2; rotate: -30deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
+@keyframes intro-glow {
+  0%, 100% { box-shadow: 0 8px 24px rgba(var(--glow), 0.35), 0 0 0 0 rgba(var(--glow), 0.5); }
+  50%      { box-shadow: 0 10px 34px rgba(var(--glow), 0.55), 0 0 0 9px rgba(var(--glow), 0); }
+}
+@keyframes intro-shine { 0%, 60% { translate: -120% 0; } 100% { translate: 120% 0; } }
+@keyframes intro-wobble {
+  0%   { --wx: 16deg;  --wy: -20deg; }
+  35%  { --wx: -12deg; --wy: 8deg; }
+  70%  { --wx: 6deg;   --wy: 22deg; }
+  100% { --wx: -18deg; --wy: -6deg; }
+}
 @keyframes intro-name  { from { opacity: 0; letter-spacing: 0.35em; filter: blur(8px); } to { opacity: 1; letter-spacing: 0.01em; filter: none; } }
 @keyframes intro-draw  { to { stroke-dashoffset: 0; } }
 @keyframes intro-float { from { transform: translateY(-10px) rotate(-4deg); } to { transform: translateY(12px) rotate(4deg); } }
@@ -410,17 +450,17 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   .intro-side--acad .intro-copy { left: 1.25rem; width: 56%; top: calc(2vh + min(11vw, 6vh) + 2.4vh); }
   .intro-side--art  .intro-copy { right: 1.25rem; width: 52%; top: 46%; }
   .intro-side--acad .intro-kicker { margin-top: auto; }  /* centres the text above the button */
-  .intro-cta { margin-top: auto; padding: 0.6rem 1rem; font-size: 0.72rem; letter-spacing: 0.05em; }
+  .intro-cta { margin-top: auto; padding: 0.68rem 1.15rem; font-size: 0.76rem; letter-spacing: 0.05em; }
   .intro-tag, .intro-org { display: none; }
   .intro-role { font-size: clamp(1.15rem, 5.4vw, 1.5rem); }
   .intro-side--art .intro-role { font-size: clamp(1.6rem, 7.6vw, 2.1rem); }
 
   /* Academic: photo at the right, a little in from the edge, sized by
      the screen width so it is never cut off */
-  .intro-cutout { height: min(72%, 74vw); right: 8vw; }
+  .intro-cutout { height: min(72%, 74vw); left: auto; right: 8vw; }
 
   /* Art: the painting at the left, a little in from the edge */
-  .intro-frame { left: 8%; top: 7%; width: min(50vw, 26vh); animation-name: intro-pin-m; }
+  .intro-frame { left: 8%; right: auto; top: 7%; width: min(50vw, 26vh); animation-name: intro-pin-m; }
   .intro-card { padding: 7px 7px 24px; }
   .intro-caption { font-size: 0.85rem; bottom: 3px; }
   .intro-tape { height: 16px; top: -8px; }
@@ -443,13 +483,14 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   .intro-side--art .intro-role { font-size: clamp(2rem, min(3.4vw, 6vh), 3.2rem); }
   .intro-splash--top { width: 160px; top: -160px; }
   .intro-splash--corner { width: 170px; }
-  .intro-cutout { height: min(66vh, 760px, 48vw); }
+  .intro-cutout { height: min(66vh, 760px, 48vw); left: calc(50vw - 0.6 * min(66vh, 760px, 48vw)); }
 }
 
 /* ── Reduced motion: no slides, drifting or spinning ────────── */
 @media (prefers-reduced-motion: reduce) {
   .intro *, .intro *::before, .intro { animation-duration: 0.01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; }
   .intro-side, .intro-cutout, .intro-frame, .intro-grid, .intro-glyph, .intro-splash { transition: none !important; }
-  .intro-splash:hover { transform: none; }
+  .intro-splash { animation: intro-splat 0.01ms both; }
+  .intro-splash:hover { --lift: 0px; --grow: 1; }
   .intro-stroke path { stroke-dashoffset: 0; }
 }

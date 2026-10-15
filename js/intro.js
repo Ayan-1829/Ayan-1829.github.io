@@ -53,7 +53,7 @@ const Intro = (() => {
         <span class="intro-copy">
           <img class="intro-splash intro-splash--top" src="images/intro/splash.webp" alt="" aria-hidden="true"/>
           <span class="intro-kicker">The Painter<span class="intro-num">01</span></span>
-          <span class="intro-role">${prof.art.eyebrow}<svg class="intro-stroke" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M4 11 Q 22 1, 40 11 T 76 11 T 112 11 T 148 11 T 184 11 T 220 11 T 256 11 T 296 9"/></svg></span>
+          <span class="intro-role">${prof.art.eyebrow}<svg class="intro-stroke" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M4 12 C 12 5, 22 3, 31 10 S 46 18, 60 12 S 74 4, 92 8 S 108 17, 121 13 S 132 5, 150 6 S 170 16, 186 12 S 199 6, 213 9 S 236 18, 252 11 S 268 3, 281 8 S 292 12, 296 10"/></svg></span>
           <span class="intro-tag">${prof.art.tagline}</span>
           <span class="intro-cta">Enter Art Studio <span aria-hidden="true">→</span></span>
         </span>
@@ -125,6 +125,12 @@ const Intro = (() => {
       if (side) choose(side.dataset.mode);
     });
     el.addEventListener('pointermove', onMove, { passive: true });
+    el.addEventListener('pointerout', e => {
+      if (e.target.classList && e.target.classList.contains('intro-splash')) {
+        e.target.style.setProperty('--rx', '0deg');
+        e.target.style.setProperty('--ry', '0deg');
+      }
+    });
     document.addEventListener('keydown', onKey);
     el.focus({ preventScroll: true });
     document.documentElement.classList.remove('intro-pending');
