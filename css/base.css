@@ -71,6 +71,23 @@ body.art-mode .art-brush {
   background: radial-gradient(circle, #7a9e7e22 0%, transparent 70%);
 }
 
+/* ── Profile backgrounds: water (art) and network (academic) ────
+   js/water.js and js/techbg.js. Both sit behind all the page content
+   (z-index -1) but above the page colour, and each fades in only in
+   its own profile; very light by design. */
+#waterCanvas,
+#techCanvas {
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+#waterCanvas { filter: blur(2.5px); }  /* softens the 6px simulation cells into smooth ripples */
+#techCanvas  { inset: 0; }
+body.art-mode #waterCanvas    { opacity: 0.6; }
+body:not(.art-mode) #techCanvas { opacity: 0.5; }
+
 /* ── Section Fade-in Animation ────────────────── */
 .profile-section {
   animation: fadeUp 0.6s ease forwards;

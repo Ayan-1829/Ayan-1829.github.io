@@ -154,9 +154,18 @@ const Intro = (() => {
     }
     window.scrollTo(0, 0);
 
+    /* The chosen half widens while its contents dissolve into the
+       profile's page colour (css/intro.css); then the intro fades away
+       as the page underneath rises into place */
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setTimeout(() => el && el.classList.add('intro--gone'), reduce ? 0 : 650);
-    setTimeout(close, reduce ? 50 : 1150);
+    const root = document.documentElement;
+    setTimeout(() => {
+      if (!el) return;
+      el.classList.add('intro--gone');
+      if (!reduce) root.classList.add('intro-reveal');
+    }, reduce ? 0 : 800);
+    setTimeout(close, reduce ? 50 : 1600);
+    setTimeout(() => root.classList.remove('intro-reveal'), reduce ? 0 : 3000);
   }
 
   function close() {
