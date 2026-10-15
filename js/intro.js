@@ -32,9 +32,13 @@ const Intro = (() => {
       `<span class="intro-glyph" style="--x:${x};--y:${y};--s:${s};--d:${d};--n:${n}">${t}</span>`).join('');
     const art = (typeof DATA_ARTWORK !== 'undefined' && DATA_ARTWORK.find(a => a.file === PAINTING.file)) || {};
     const caption = [art.title, art.medium && art.medium.replace(/ on canvas$/i, '').toLowerCase(), art.year].filter(Boolean).join(' · ');
-    /* "Ayan" sits fully on the left (art) half and "Sarkar" fully on the right */
+    /* "Ayan" sits fully on the left (art) half and "Sarkar" fully on the
+       right; on phones, where the halves stack, .intro-name-m shows the
+       whole name on one line instead */
     const [first, ...rest] = prof.name.split(' ');
     return `
+      <div class="intro-name-m" aria-hidden="true">${prof.name}</div>
+
       <button type="button" class="intro-side intro-side--art" data-mode="art">
         <span class="intro-bg" aria-hidden="true"><span class="intro-paper"></span><img class="intro-splash intro-splash--corner" src="images/intro/splash.webp" alt=""/></span>
         <span class="intro-word intro-word--art" aria-hidden="true">${first}</span>
