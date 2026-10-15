@@ -92,8 +92,9 @@
       for (let k = 1; k < p.length; k++) lens.push(lens[k - 1] + Math.hypot(p[k][0] - p[k - 1][0], p[k][1] - p[k - 1][1]));
       traces.push({ p, lens, total: lens[lens.length - 1] });
     }
-    drawBoard(base, 'rgba(110, 160, 230, 0.32)', 1.1);
-    drawBoard(lit, 'rgba(150, 215, 255, 0.95)', 1.4);
+    /* Close to the page colour, so the board never competes with the text */
+    drawBoard(base, 'rgba(70, 110, 170, 0.26)', 1);
+    drawBoard(lit, 'rgba(110, 165, 230, 0.6)', 1.2);
     signals = [];
     pings = [];
   }
@@ -175,7 +176,7 @@
 
     /* Light up the board around the pointer, brightest at the centre */
     if (mouse.on) {
-      for (const [r, a] of [[GLOW, 0.25], [GLOW * 0.65, 0.3], [GLOW * 0.35, 0.35]]) {
+      for (const [r, a] of [[GLOW, 0.18], [GLOW * 0.65, 0.22], [GLOW * 0.35, 0.26]]) {
         ctx.save();
         ctx.beginPath(); ctx.arc(mouse.x, mouse.y, r, 0, Math.PI * 2); ctx.clip();
         ctx.globalAlpha = a;
@@ -189,7 +190,7 @@
       p.r += 6;
       const life = 1 - p.r / 420;
       if (life <= 0) { pings.splice(k, 1); continue; }
-      ctx.strokeStyle = `rgba(${p.c[0]}, ${p.c[1]}, ${p.c[2]}, ${0.4 * life})`;
+      ctx.strokeStyle = `rgba(${p.c[0]}, ${p.c[1]}, ${p.c[2]}, ${0.3 * life})`;
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.stroke();
     }
@@ -202,8 +203,8 @@
       if (s.pos < -40 || s.pos > s.t.total + 40) { signals.splice(k, 1); continue; }
       const tail = s.pos - s.dir * 34;
       const [hx, hy] = pointAt(s.t, s.pos);
-      ctx.strokeStyle = `rgba(${s.c[0]}, ${s.c[1]}, ${s.c[2]}, 0.85)`;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = `rgba(${s.c[0]}, ${s.c[1]}, ${s.c[2]}, 0.6)`;
+      ctx.lineWidth = 1.6;
       ctx.beginPath();
       const steps = 6;
       for (let i = 0; i <= steps; i++) {
@@ -211,8 +212,8 @@
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.fillStyle = `rgba(${s.c[0]}, ${s.c[1]}, ${s.c[2]}, 1)`;
-      ctx.beginPath(); ctx.arc(hx, hy, 2.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = `rgba(${s.c[0]}, ${s.c[1]}, ${s.c[2]}, 0.8)`;
+      ctx.beginPath(); ctx.arc(hx, hy, 2, 0, Math.PI * 2); ctx.fill();
     }
   }
 

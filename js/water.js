@@ -4,8 +4,11 @@
    A small ripple simulation (one height value per 6px cell) drawn as
    faint highlights and shadows on a canvas behind the page content.
    Moving the pointer stirs the water, and it settles back to still when
-   nothing moves. A click also drops a random colour of ink, which
-   spreads, shimmers with the ripples and slowly fades. It runs only while the art profile is showing, pauses
+   nothing moves. Pressing drops one colour of ink (picked at random,
+   and shared with the click splash in cursors.js through
+   window.inkColour); holding keeps pouring it, so the pool of colour
+   grows wider the longer the press lasts. Ink spreads, shimmers with
+   the ripples and slowly fades. It runs only while the art profile is showing, pauses
    in a background tab, and stays off for visitors who prefer reduced
    motion. The canvas is tiny and the browser scales it up, which
    keeps it cheap and makes it soft.
@@ -27,6 +30,7 @@
   let nR, nG, nB, nA;                    /* next ink step */
   let inkLeft = 0;                       /* total ink, to skip ink work when clear */
   let running = false, raf = 0, lastX = null, lastY = null;
+  let pour = null;                       /* { x, y, c, t0 } while the pointer is held down */
 
   function setup() {
     canvas = document.createElement('canvas');
@@ -38,7 +42,10 @@
 
     window.addEventListener('resize', resize);
     window.addEventListener('pointermove', onMove, { passive: true });
-    window.addEventListener('pointerdown', onDown, { passive: true });
+    /* Capture phase, so the colour is chosen before cursors.js draws
+       the click splash in it */
+    window.addEventListener('pointerdown', onDown, { capture: true, passive: true });
+    for (const type of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(type, () => { pour = null; });
     document.addEventListener('visibilitychange', sync);
     reduceMotion.addEventListener?.('change', sync);
     /* Profile switches toggle body.art-mode (toggle.js:applyMode) */
@@ -78,9 +85,12 @@
     eachInDisc(px, py, r, (i, k) => { cur[i] += amount * k; });
   }
 
-  function dropInk(px, py) {
+  function pickInk() {
     const base = INKS[Math.floor(Math.random() * INKS.length)];
-    const c = base.map(v => Math.max(0, Math.min(255, v + (Math.random() - 0.5) * 40)));
+    return base.map(v => Math.round(Math.max(0, Math.min(255, v + (Math.random() - 0.5) * 40))));
+  }
+
+  function dropInk(px, py, c) {
     eachInDisc(px, py, 7, (i, k) => {
       const a = k * 3;  /* more than full strength at the centre, so it stays vivid while it spreads */
       inkR[i] += c[0] * a; inkG[i] += c[1] * a; inkB[i] += c[2] * a; inkA[i] += a;
@@ -88,8 +98,24 @@
     });
   }
 
+  /* While held, ink keeps flowing in: the pool of colour grows from
+     about 40px to about 200px across. Each cell is topped up to a
+     level (not added to), so the pool widens without getting darker. */
+  function pourInk(now) {
+    const r = Math.min(5 + (now - pour.t0) / 45, 34);
+    const c = pour.c;
+    eachInDisc(pour.x, pour.y, Math.round(r), (i, k) => {
+      const need = k * 2.2 - inkA[i];
+      if (need <= 0) return;
+      inkR[i] += c[0] * need; inkG[i] += c[1] * need; inkB[i] += c[2] * need; inkA[i] += need;
+      inkLeft += need;
+    });
+    if (now - (pour.lastRipple || 0) > 120) { disturb(pour.x, pour.y, 70, 2); pour.lastRipple = now; }
+  }
+
   /* The faster the pointer moves, the more it stirs the water */
   function onMove(e) {
+    if (pour) { pour.x = e.clientX; pour.y = e.clientY; }
     if (!running) return;
     if (lastX !== null) {
       const speed = Math.min(Math.hypot(e.clientX - lastX, e.clientY - lastY), 40);
@@ -100,9 +126,12 @@
   }
 
   function onDown(e) {
-    if (!running) return;
+    if (!running || e.button > 0) return;
+    const c = pickInk();
+    window.inkColour = c;
     disturb(e.clientX, e.clientY, 380, 3);
-    dropInk(e.clientX, e.clientY);
+    dropInk(e.clientX, e.clientY, c);
+    pour = { x: e.clientX, y: e.clientY, c, t0: performance.now() };
   }
 
   /* Classic two-buffer ripple step: each cell becomes the average of its
@@ -176,8 +205,9 @@
     ctx.putImageData(image, 0, 0);
   }
 
-  function frame() {
+  function frame(now) {
     raf = requestAnimationFrame(frame);
+    if (pour) pourInk(now);
     step();
     if (inkLeft > 0.05) spreadInk();
     draw();

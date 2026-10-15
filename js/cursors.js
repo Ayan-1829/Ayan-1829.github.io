@@ -1,7 +1,8 @@
 /* ================================================================
    CURSORS.JS
    Academic mode → pen_icon.png cursor + ink drawing on drag
-   Art mode      → brush_icon.png cursor + color splash on click
+   Art mode      → brush_icon.png cursor + a splash on press, in the one
+                   colour that water.js pours into the water there
 
 ================================================================ */
 
@@ -250,22 +251,48 @@ function setInteractiveCursor(value) {
 
 function addSplashListener() {
   removeSplashListener();
-  splashClickListener = e => spawnSplash(e.clientX, e.clientY);
-  document.addEventListener('click', splashClickListener);
+  splashClickListener = e => { if (e.button <= 0) spawnSplash(e.clientX, e.clientY, window.inkColour); };
+  document.addEventListener('pointerdown', splashClickListener);
 }
 
 function removeSplashListener() {
   if (splashClickListener) {
-    document.removeEventListener('click', splashClickListener);
+    document.removeEventListener('pointerdown', splashClickListener);
     splashClickListener = null;
   }
 }
 
-function spawnSplash(x, y) {
+/* The multicolour splash recoloured to one colour: each pixel keeps its
+   lightness and alpha but takes the given hue, so the painted texture
+   survives. Made once per colour and cached as a data URL. */
+const splashSource = new Image();
+splashSource.src = SPLASH_SRC;
+const tintedSplashes = new Map();
+function tintedSplash(rgb) {
+  if (!rgb || !splashSource.complete || !splashSource.naturalWidth) return SPLASH_SRC;
+  const key = rgb.join(',');
+  if (tintedSplashes.has(key)) return tintedSplashes.get(key);
+  const c = document.createElement('canvas');
+  c.width = splashSource.naturalWidth;
+  c.height = splashSource.naturalHeight;
+  const g = c.getContext('2d');
+  g.drawImage(splashSource, 0, 0);
+  const im = g.getImageData(0, 0, c.width, c.height), d = im.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const light = Math.min(1, 0.35 + (0.3 * d[i] + 0.59 * d[i + 1] + 0.11 * d[i + 2]) / 255 * 0.9);
+    d[i] = rgb[0] * light; d[i + 1] = rgb[1] * light; d[i + 2] = rgb[2] * light;
+  }
+  g.putImageData(im, 0, 0);
+  const url = c.toDataURL();
+  tintedSplashes.set(key, url);
+  return url;
+}
+
+function spawnSplash(x, y, rgb) {
   const size     = SPLASH_SIZES[Math.floor(Math.random() * SPLASH_SIZES.length)];
   const rotation = Math.floor(Math.random() * 360);
   const img = document.createElement('img');
-  img.src = SPLASH_SRC;
+  img.src = tintedSplash(rgb);
   Object.assign(img.style, {
     position: 'fixed', left: (x - size/2)+'px', top: (y - size/2)+'px',
     width: size+'px', height: size+'px', pointerEvents: 'none',

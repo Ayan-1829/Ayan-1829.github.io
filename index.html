@@ -420,6 +420,10 @@
 
     Render.all(initialMode);
     initToggle(initialMode);
+    /* cursors.js starts in academic mode; a shared #art link needs the
+       brush cursor and click splashes too (and stops the first click
+       from flipping the page back to academic) */
+    if (initialMode === 'art' && typeof updateCursorForMode === 'function') updateCursorForMode('art');
     wireSecondaryBtn(initialMode);
     if (typeof injectStructuredData === 'function') injectStructuredData();
 
