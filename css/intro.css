@@ -260,9 +260,9 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -0.45em;
+  bottom: -0.5em;
   width: 100%;
-  height: 0.5em;
+  height: 0.55em;
   overflow: visible;
 }
 .intro-stroke path {
@@ -270,8 +270,8 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   stroke: #c4622d;
   stroke-width: 5;
   stroke-linecap: round;
-  stroke-dasharray: 420;
-  stroke-dashoffset: 420;
+  stroke-dasharray: 600;   /* longer than the wavy path, for the draw-in */
+  stroke-dashoffset: 600;
   animation: intro-draw 1s ease-out 1.25s forwards;
 }
 
@@ -425,9 +425,9 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   .intro-caption { font-size: 0.85rem; bottom: 3px; }
   .intro-tape { height: 16px; top: -8px; }
 
-  /* Two splashes: one just above the text, one below the painting */
-  .intro-splash--corner { display: none; }
-  .intro-splash--top    { width: 96px; right: 0; top: -100px; }
+  /* Three splashes: right of the painting, above the text, below the painting */
+  .intro-splash--corner { width: min(80px, 20vw); left: calc(8% + min(50vw, 26vh) + 10px); top: 3%; }
+  .intro-splash--top    { width: 92px; right: 0; top: -92px; }
   .intro-splash--under  { width: 104px; margin-left: -52px; top: calc(100% + 4px); }
 
   .intro-seam { display: none; }

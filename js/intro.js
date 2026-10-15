@@ -53,7 +53,7 @@ const Intro = (() => {
         <span class="intro-copy">
           <img class="intro-splash intro-splash--top" src="images/intro/splash.webp" alt="" aria-hidden="true"/>
           <span class="intro-kicker">The Painter<span class="intro-num">01</span></span>
-          <span class="intro-role">${prof.art.eyebrow}<svg class="intro-stroke" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M4 14 C 70 4, 150 18, 220 8 S 290 10, 296 6"/></svg></span>
+          <span class="intro-role">${prof.art.eyebrow}<svg class="intro-stroke" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M4 11 Q 22 1, 40 11 T 76 11 T 112 11 T 148 11 T 184 11 T 220 11 T 256 11 T 296 9"/></svg></span>
           <span class="intro-tag">${prof.art.tagline}</span>
           <span class="intro-cta">Enter Art Studio <span aria-hidden="true">→</span></span>
         </span>
