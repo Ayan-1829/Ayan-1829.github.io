@@ -6,7 +6,9 @@
    The board itself never moves. Near the pointer the traces light up,
    and moving over them sends signals running along the nearest trace;
    a click sends a ring out and a burst of signals, in a random accent
-   colour, along the traces around it. It runs only while the academic
+   colour, along the traces around it. Clicking a nav link sends a
+   stream of data packets along a route to that section's heading
+   (the 'navflow' event from index.html). It runs only while the academic
    profile is showing, pauses in a background tab, and stays off for
    visitors who prefer reduced motion.
    ================================================================ */
@@ -20,7 +22,7 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   let canvas, ctx, base, lit, W = 0, H = 0, dpr = 1;
-  let traces = [], signals = [], pings = [];
+  let traces = [], signals = [], pings = [], flows = [];
   let mouse = { x: 0, y: 0, on: false }, lastSpawn = 0;
   let running = false, raf = 0, resizeTimer = 0;
 
@@ -38,6 +40,7 @@
     window.addEventListener('pointermove', onMove, { passive: true });
     document.documentElement.addEventListener('pointerleave', () => { mouse.on = false; });
     window.addEventListener('pointerdown', onDown, { passive: true });
+    window.addEventListener('navflow', e => { if (running) startFlow(e.detail.points); });
     document.addEventListener('visibilitychange', sync);
     reduceMotion.addEventListener?.('change', sync);
     /* Profile switches toggle body.art-mode (toggle.js:applyMode) */
@@ -168,6 +171,58 @@
     near(e.clientX, e.clientY, 170).slice(0, 8).forEach(h => launch(h.t, h.at, c));
   }
 
+  /* ── Nav data flow ──────────────────────────────────────────── */
+  /* A route drawn in, a train of packets racing along it, a ping on
+     arrival, then the route fades */
+  function startFlow(points) {
+    const lens = [0];
+    for (let k = 1; k < points.length; k++) lens.push(lens[k - 1] + Math.hypot(points[k][0] - points[k - 1][0], points[k][1] - points[k - 1][1]));
+    flows.push({ route: { p: points, lens, total: lens[lens.length - 1] }, age: 0, arrived: false });
+  }
+
+  function drawFlows() {
+    const PACKETS = 12, GAP = 4, SPEED = 16;
+    for (let k = flows.length - 1; k >= 0; k--) {
+      const f = flows[k], r = f.route;
+      f.age++;
+      const lastPos = (f.age - (PACKETS - 1) * GAP) * SPEED;
+      const fade = lastPos > r.total ? Math.max(0, 1 - (lastPos - r.total) / 400) : 1;
+      if (fade <= 0) { flows.splice(k, 1); continue; }
+      /* the route itself */
+      ctx.strokeStyle = `rgba(225, 201, 85, ${0.5 * fade * Math.min(1, f.age / 8)})`;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      r.p.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.stroke();
+      /* packets: short bright streaks with glowing heads */
+      ctx.save();
+      ctx.shadowBlur = 10;
+      for (let n = 0; n < PACKETS; n++) {
+        const pos = (f.age - n * GAP) * SPEED;
+        if (pos <= 0 || pos > r.total) continue;
+        const c = n % 3 === 1 ? [74, 200, 255] : [225, 201, 85];
+        const [hx, hy] = pointAt(r, pos);
+        ctx.shadowColor = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+        ctx.strokeStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, 0.9)`;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        for (let i = 0; i <= 4; i++) {
+          const [x, y] = pointAt(r, pos - 38 + 38 * (i / 4));
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, 0.95)`;
+        ctx.beginPath(); ctx.arc(hx, hy, 3, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+      if (!f.arrived && f.age * SPEED >= r.total) {
+        f.arrived = true;
+        const end = r.p[r.p.length - 1];
+        pings.push({ x: end[0], y: end[1], r: 0, c: [225, 201, 85] });
+      }
+    }
+  }
+
   /* ── Frame ──────────────────────────────────────────────────── */
   function frame() {
     raf = requestAnimationFrame(frame);
@@ -194,6 +249,8 @@
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.stroke();
     }
+
+    drawFlows();
 
     /* Each signal is a short bright streak with a glowing head */
     ctx.lineCap = 'round';
@@ -227,6 +284,7 @@
       cancelAnimationFrame(raf);
       signals = [];
       pings = [];
+      flows = [];
     }
   }
 

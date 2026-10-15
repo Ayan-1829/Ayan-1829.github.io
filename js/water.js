@@ -8,7 +8,9 @@
    and shared with the click splash in cursors.js through
    window.inkColour); holding keeps pouring it, so the pool of colour
    grows wider the longer the press lasts. Ink spreads, shimmers with
-   the ripples and slowly fades. It runs only while the art profile is showing, pauses
+   the ripples and slowly fades. Clicking a nav link sends a stream of
+   ink along a route to that section's heading (the 'navflow' event
+   from index.html). It runs only while the art profile is showing, pauses
    in a background tab, and stays off for visitors who prefer reduced
    motion. The canvas is tiny and the browser scales it up, which
    keeps it cheap and makes it soft.
@@ -31,6 +33,7 @@
   let inkLeft = 0;                       /* total ink, to skip ink work when clear */
   let running = false, raf = 0, lastX = null, lastY = null;
   let pour = null;                       /* { x, y, c, t0 } while the pointer is held down */
+  let streams = [];                      /* nav flows: ink running along a route */
 
   function setup() {
     canvas = document.createElement('canvas');
@@ -46,6 +49,7 @@
        the click splash in it */
     window.addEventListener('pointerdown', onDown, { capture: true, passive: true });
     for (const type of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(type, () => { pour = null; });
+    window.addEventListener('navflow', e => { if (running) startStream(e.detail.points); });
     document.addEventListener('visibilitychange', sync);
     reduceMotion.addEventListener?.('change', sync);
     /* Profile switches toggle body.art-mode (toggle.js:applyMode) */
@@ -111,6 +115,43 @@
       inkLeft += need;
     });
     if (now - (pour.lastRipple || 0) > 120) { disturb(pour.x, pour.y, 70, 2); pour.lastRipple = now; }
+  }
+
+  /* Nav flow: a head of ink runs along the route, leaving a trail of
+     colour and small ripples, and lands with a bigger drop */
+  function startStream(points) {
+    const lens = [0];
+    for (let k = 1; k < points.length; k++) lens.push(lens[k - 1] + Math.hypot(points[k][0] - points[k - 1][0], points[k][1] - points[k - 1][1]));
+    streams.push({ p: points, lens, total: lens[lens.length - 1], pos: 0, c: pickInk() });
+  }
+
+  function pointOn(s, dist) {
+    let k = 1;
+    while (k < s.lens.length - 1 && s.lens[k] < dist) k++;
+    const f = Math.min(1, (dist - s.lens[k - 1]) / ((s.lens[k] - s.lens[k - 1]) || 1));
+    return [s.p[k - 1][0] + (s.p[k][0] - s.p[k - 1][0]) * f, s.p[k - 1][1] + (s.p[k][1] - s.p[k - 1][1]) * f];
+  }
+
+  function runStreams() {
+    for (let k = streams.length - 1; k >= 0; k--) {
+      const s = streams[k];
+      for (let step = 0; step < 3; step++) {           /* three dabs a frame keep the trail continuous */
+        s.pos = Math.min(s.total, s.pos + 7);
+        const [x, y] = pointOn(s, s.pos);
+        eachInDisc(x, y, 3, (i, kk) => {
+          const a = kk * 1.6;
+          inkR[i] += s.c[0] * a; inkG[i] += s.c[1] * a; inkB[i] += s.c[2] * a; inkA[i] += a;
+          inkLeft += a;
+        });
+      }
+      const [hx, hy] = pointOn(s, s.pos);
+      disturb(hx, hy, 60, 2);
+      if (s.pos >= s.total) {
+        disturb(hx, hy, 320, 3);
+        dropInk(hx, hy, s.c);
+        streams.splice(k, 1);
+      }
+    }
   }
 
   /* The faster the pointer moves, the more it stirs the water */
@@ -208,6 +249,7 @@
   function frame(now) {
     raf = requestAnimationFrame(frame);
     if (pour) pourInk(now);
+    if (streams.length) runStreams();
     step();
     if (inkLeft > 0.05) spreadInk();
     draw();

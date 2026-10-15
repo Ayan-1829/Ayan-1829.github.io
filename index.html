@@ -387,9 +387,40 @@
     const target = document.querySelector(href);
     if (!target) return;
     e.preventDefault();
+    if (anchor.closest('#nav-links')) navFlow(anchor, target);
     history.pushState({ section: href }, '', href);
     target.scrollIntoView({ behavior: 'smooth' });
   });
+
+  /* ── Nav data flow ────────────────────────────────
+     Works out a circuit-style route (straight runs and 45° turns) from
+     the clicked nav link to where the section's heading will be once
+     the smooth scroll ends, and announces it as a 'navflow' event. The
+     profile backgrounds draw it: data packets on the circuit board
+     (techbg.js) or a stream of ink in the water (water.js). The heading
+     glows briefly as the flow arrives. */
+  function navFlow(link, section) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const heading = section.querySelector('.section-title') || section;
+    const lr = link.getBoundingClientRect(), hr = heading.getBoundingClientRect(), sr = section.getBoundingClientRect();
+    const margin = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const finalScroll = Math.max(0, Math.min(sr.top + scrollY - margin, maxScroll));
+    const from = [lr.left + lr.width / 2, lr.bottom + 4];
+    const to = [hr.left + 4, hr.top + scrollY - finalScroll + hr.height / 2];
+    /* down from the link, 45° towards the heading, across, then down into it */
+    const pts = [from, [from[0], from[1] + 22]];
+    let [x, y] = pts[1];
+    const sx = Math.sign(to[0] - x) || 1;
+    const diag = Math.max(0, Math.min(Math.abs(to[0] - x), to[1] - y - 26));
+    if (diag > 0) { x += sx * diag; y += diag; pts.push([x, y]); }
+    if (Math.abs(to[0] - x) > 1) { x = to[0]; pts.push([x, y]); }
+    if (Math.abs(to[1] - y) > 1) pts.push([x, to[1]]);
+    window.dispatchEvent(new CustomEvent('navflow', { detail: { points: pts } }));
+    heading.classList.remove('flow-arrive');
+    setTimeout(() => heading.classList.add('flow-arrive'), 900);
+    setTimeout(() => heading.classList.remove('flow-arrive'), 2200);
+  }
 
   /* Handle browser back/forward — scroll to the section in history,
      switch profile and/or open the right modal if the new hash calls

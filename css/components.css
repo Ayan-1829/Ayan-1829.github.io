@@ -24,6 +24,13 @@ section {
   line-height: 1.2;
   transition: font-family 0.4s, color var(--theme-transition);
 }
+/* The heading glows briefly when the nav data flow reaches it (index.html) */
+.section-title.flow-arrive { animation: flow-arrive 1.2s ease-out; }
+@keyframes flow-arrive {
+  0%   { text-shadow: 0 0 0 transparent; }
+  30%  { text-shadow: 0 0 18px var(--accent), 0 0 4px var(--accent); }
+  100% { text-shadow: 0 0 0 transparent; }
+}
 
 body.art-mode .section-title {
   font-family: var(--font-hand);
