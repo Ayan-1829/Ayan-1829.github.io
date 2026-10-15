@@ -118,6 +118,44 @@ const DATA_PROJECTS = [
     videos: [],
     info:   [],
   },
+  /* Shown like Interactive Course Materials (full-width card with a
+     scrolling shelf and a modal of full cards), but as one shelf with
+     no institution heading. To add a project, add it to `items`.
+     Images live in images/fun/. */
+  {
+    title:   "Fun Projects",
+    type:    "funProjects",
+    icon:    "FunProjects_icon.svg",
+    tech:    ["HTML", "CSS", "JavaScript", "Firebase", "Netlify", "Claude AI"],
+    date:    "October 2026",
+    bullets: [
+      "Light-hearted Bangla quizzes about shared memories: tap what you've done and get a score, a title and a card to share.",
+      "Mobile-first and bilingual (Bangla and English), with no sign-up — a visitor's name and photo stay in their own browser.",
+    ],
+    items: [
+      {
+        title:       "কতটুকু ক্যাডেট?",
+        subtitle:    "How much Cadet are you?",
+        count:       "12 cadet colleges",
+        description: "A fun quiz for ex-cadets of Bangladesh's cadet colleges: tap what you did — discipline, mischief and getting caught — and get a score, a title and a share card in your house colours.",
+        logo:        "images/fun/KototukuCadet_logo.webp",
+        preview:     "images/fun/KototukuCadet_preview.webp",
+        url:         "https://kototuku-cadet.netlify.app/",
+      },
+      {
+        title:       "কতটুকু ভার্সিটিয়ান?",
+        subtitle:    "How Varsity are you?",
+        count:       "270 universities & colleges",
+        description: "A fun quiz for Bangladeshi university students: pick your university and hall, tap what you've done — classes, hall life, adda, food and festivals — and design a share card with your own cover photo.",
+        logo:        "images/fun/KototukuVarsitian_logo.webp",
+        preview:     "images/fun/KototukuVarsitian_preview.webp",
+        url:         "https://kototuku-varsitian.netlify.app/",
+      },
+    ],
+    links:  [],
+    videos: [],
+    info:   [],
+  },
   {
     title:   "Daily Life",
     icon:    "DailyLife_icon.webp",

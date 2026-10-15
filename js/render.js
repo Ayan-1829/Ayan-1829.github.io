@@ -175,7 +175,7 @@ const Render = {
     if (!projects.length) { grid.innerHTML = `<p style="color:var(--muted);">No projects added yet.</p>`; return; }
     window._allProjects = projects;
     grid.innerHTML = projects.map((p, idx) => {
-      if (p.type === 'courseMaterials') return courseMaterialsCardHTML(p, idx);
+      if (SHELF_TYPES[p.type]) return shelfCardHTML(p, idx);
       const techPills = p.tech.map(t => `<span class="skill-pill" style="font-size:0.72rem;padding:0.2rem 0.6rem;">${t}</span>`).join('');
       const bullets = p.bullets.map(b => `<li style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:0.25rem;">${b}</li>`).join('');
       /* stopPropagation so following a link doesn't also open the modal */
@@ -764,33 +764,53 @@ function closeAchievementModal(opts) {
   }
 }
 
-/* ── Interactive Course Materials ─────────────────────────────────
-   A project of `type: 'courseMaterials'` spans both grid columns. Its
-   card shows each institution's courses as a row of small cards that
-   scrolls sideways when they don't all fit; the modal lists every
-   course as a full card with a preview. Course links open the course
+/* ── Wide "shelf" projects: Interactive Course Materials, Fun Projects ──
+   Projects of these types span both grid columns. Their card shows the
+   items as a row of preview cards that scrolls sideways when they don't
+   all fit; the modal lists every item as a full card. Course materials
+   group their courses under institution headings (`institutions`); the
+   others are one shelf with no heading (`items`). Item links open the
    site directly, so they stop the click from also opening the modal. */
-function courseMaterialsCardHTML(p, idx) {
+const SHELF_TYPES = {
+  courseMaterials: { footer: 'View All Courses →',  open: 'Open Interactive Slides ↗' },
+  funProjects:     { footer: 'View All Projects →', open: 'Play the Quiz ↗' },
+};
+
+function shelfGroups(p) {
+  if (p.institutions) return p.institutions.map(inst => ({ name: inst.name, logo: inst.logo, items: inst.courses || [] }));
+  return [{ items: p.items || [] }];
+}
+
+function shelfGroupHeadHTML(g, modal) {
+  if (!g.name) return '';
+  return `
+        <div class="cm-inst-head${modal ? ' cm-inst-head--modal' : ''}">
+          ${g.logo ? `<img src="${g.logo}" alt="" class="cm-inst-logo"/>` : ''}
+          <span class="cm-inst-name">${g.name}</span>
+        </div>`;
+}
+
+function shelfCardHTML(p, idx) {
   const techPills = p.tech.map(t => `<span class="skill-pill" style="font-size:0.72rem;padding:0.2rem 0.6rem;">${t}</span>`).join('');
   const iconHTML = p.icon
     ? `<img src="images/${p.icon}" alt="${p.title} icon" class="project-card-icon" style="width:2rem;height:2rem;object-fit:contain;border-radius:6px;flex-shrink:0;"/>`
     : '';
-  const shelves = (p.institutions || []).map(inst => {
-    const items = (inst.courses || []).map(c => `
+  const shelves = shelfGroups(p).map(g => {
+    const items = g.items.map(c => `
       <a href="${c.url}" target="_blank" rel="noopener" class="cm-mini" onclick="event.stopPropagation()" title="Open ${c.title}">
-        <img src="${c.logo}" alt="" class="cm-mini-logo" loading="lazy"/>
-        <span class="cm-mini-text">
-          <span class="cm-mini-code">${c.code}</span>
-          <span class="cm-mini-title">${c.title}</span>
-          ${c.count ? `<span class="cm-mini-count">${c.count}</span>` : ''}
+        ${c.preview ? `<img src="${c.preview}" alt="" class="cm-mini-preview" loading="lazy"/>` : ''}
+        <span class="cm-mini-body">
+          <img src="${c.logo}" alt="" class="cm-mini-logo" loading="lazy"/>
+          <span class="cm-mini-text">
+            ${c.code ? `<span class="cm-mini-code">${c.code}</span>` : ''}
+            <span class="cm-mini-title">${c.title}</span>
+            ${c.subtitle ? `<span class="cm-mini-sub">${c.subtitle}</span>` : ''}
+            ${c.count ? `<span class="cm-mini-count">${c.count}</span>` : ''}
+          </span>
         </span>
       </a>`).join('');
     return `
-      <div class="cm-inst">
-        <div class="cm-inst-head">
-          ${inst.logo ? `<img src="${inst.logo}" alt="" class="cm-inst-logo"/>` : ''}
-          <span class="cm-inst-name">${inst.name}</span>
-        </div>
+      <div class="cm-inst">${shelfGroupHeadHTML(g, false)}
         <div class="cm-shelf-wrap">
           <button type="button" class="cm-shelf-arrow cm-shelf-arrow--prev" aria-label="Scroll left" onclick="event.stopPropagation();scrollCmShelf(this,-1)">‹</button>
           <div class="cm-shelf">${items}</div>
@@ -807,34 +827,34 @@ function courseMaterialsCardHTML(p, idx) {
       ${p.bullets && p.bullets[0] ? `<div class="card-desc">${p.bullets[0]}</div>` : ''}
       <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">${techPills}</div>
       ${shelves}
-      <div class="course-card-footer">View All Courses →</div>
+      <div class="course-card-footer">${SHELF_TYPES[p.type].footer}</div>
     </div>`;
 }
 
-/* Full course cards for the modal, grouped under institution headings */
-function courseMaterialsModalHTML(p) {
-  return (p.institutions || []).map(inst => {
-    const cards = (inst.courses || []).map(c => `
+/* Full cards for the modal, grouped under institution headings if any */
+function shelfModalHTML(p) {
+  return shelfGroups(p).map(g => {
+    const cards = g.items.map(c => {
+      const kicker = [c.code, c.count].filter(Boolean).join(' · ');
+      return `
       <a href="${c.url}" target="_blank" rel="noopener" class="cm-card">
-        ${c.preview ? `<img src="${c.preview}" alt="${c.title} — course preview card" class="cm-card-preview" loading="lazy"/>` : ''}
+        ${c.preview ? `<img src="${c.preview}" alt="${c.subtitle || c.title} — preview card" class="cm-card-preview" loading="lazy"/>` : ''}
         <div class="cm-card-body">
           <div class="cm-card-head">
             <img src="${c.logo}" alt="" class="cm-mini-logo"/>
             <div>
-              <div class="cm-mini-code">${c.code}${c.count ? ` · ${c.count}` : ''}</div>
+              ${kicker ? `<div class="cm-mini-code">${kicker}</div>` : ''}
               <div class="cm-card-title">${c.title}</div>
+              ${c.subtitle ? `<div class="cm-mini-sub">${c.subtitle}</div>` : ''}
             </div>
           </div>
           ${c.description ? `<p class="cm-card-desc">${c.description}</p>` : ''}
-          <span class="cm-card-open">Open Interactive Slides ↗</span>
+          <span class="cm-card-open">${SHELF_TYPES[p.type].open}</span>
         </div>
-      </a>`).join('');
+      </a>`;
+    }).join('');
     return `
-      <div class="course-modal-section">
-        <div class="cm-inst-head cm-inst-head--modal">
-          ${inst.logo ? `<img src="${inst.logo}" alt="" class="cm-inst-logo"/>` : ''}
-          <span class="cm-inst-name">${inst.name}</span>
-        </div>
+      <div class="course-modal-section">${shelfGroupHeadHTML(g, true)}
         <div class="cm-card-grid">${cards}</div>
       </div>`;
   }).join('');
@@ -878,9 +898,9 @@ function openProjectModal(index, opts) {
   const body   = document.getElementById('achievementModalBody');
   if (!modal || !header || !body) return;
 
-  /* The course-materials modal holds a grid of cards, so it gets a wider box */
-  const isCourseMaterials = p.type === 'courseMaterials';
-  modal.querySelector('.course-modal-box')?.classList.toggle('course-modal-box--wide', isCourseMaterials);
+  /* Shelf projects' modals hold a grid of cards, so they get a wider box */
+  const isShelf = !!SHELF_TYPES[p.type];
+  modal.querySelector('.course-modal-box')?.classList.toggle('course-modal-box--wide', isShelf);
 
   const techPills = p.tech.map(t => `<span class="skill-pill" style="font-size:0.75rem;padding:0.2rem 0.6rem;">${t}</span>`).join('');
   const linksHTML = (p.links || []).filter(l => l.url).map(l =>
@@ -902,7 +922,7 @@ function openProjectModal(index, opts) {
 
   body.innerHTML = `
     ${bulletsHTML ? `<div class="course-modal-section"><h3>Overview</h3><ul style="margin:0;padding-left:1.2rem;">${bulletsHTML}</ul></div>` : ''}
-    ${isCourseMaterials ? courseMaterialsModalHTML(p) : ''}
+    ${isShelf ? shelfModalHTML(p) : ''}
     ${linksHTML ? `<div class="course-modal-section"><h3>Links</h3><div class="course-links-row">${linksHTML}</div></div>` : ''}
     ${infoHTML  ? `<div class="course-modal-section"><h3>Additional Information</h3>${infoHTML}</div>` : ''}
     ${videosHTML ? `<div class="course-modal-section"><h3>Videos</h3><div class="course-videos-grid">${videosHTML}</div></div>` : ''}`;
