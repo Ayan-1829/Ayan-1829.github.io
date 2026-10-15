@@ -3,10 +3,9 @@
 
    A small ripple simulation (one height value per 6px cell) drawn as
    faint highlights and shadows on a canvas behind the page content.
-   Moving the pointer stirs the water; now and then a drop lands on its
-   own so the surface is never completely still. A click also drops a
-   random colour of ink, which spreads, shimmers with the ripples and
-   slowly fades. It runs only while the art profile is showing, pauses
+   Moving the pointer stirs the water, and it settles back to still when
+   nothing moves. A click also drops a random colour of ink, which
+   spreads, shimmers with the ripples and slowly fades. It runs only while the art profile is showing, pauses
    in a background tab, and stays off for visitors who prefer reduced
    motion. The canvas is tiny and the browser scales it up, which
    keeps it cheap and makes it soft.
@@ -27,7 +26,7 @@
   let inkR, inkG, inkB, inkA;            /* ink: colour × amount, and amount */
   let nR, nG, nB, nA;                    /* next ink step */
   let inkLeft = 0;                       /* total ink, to skip ink work when clear */
-  let running = false, raf = 0, nextDrop = 0, lastX = null, lastY = null;
+  let running = false, raf = 0, lastX = null, lastY = null;
 
   function setup() {
     canvas = document.createElement('canvas');
@@ -177,12 +176,8 @@
     ctx.putImageData(image, 0, 0);
   }
 
-  function frame(now) {
+  function frame() {
     raf = requestAnimationFrame(frame);
-    if (now > nextDrop) {
-      disturb(Math.random() * window.innerWidth, Math.random() * window.innerHeight, 160 + Math.random() * 140, 2);
-      nextDrop = now + 700 + Math.random() * 1500;
-    }
     step();
     if (inkLeft > 0.05) spreadInk();
     draw();

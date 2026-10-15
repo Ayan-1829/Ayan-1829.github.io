@@ -1,23 +1,28 @@
 /* ================================================================
-   TECHBG.JS — a very light network behind the academic profile
+   TECHBG.JS — a very light circuit board behind the academic profile
 
-   Faint nodes drift slowly and link up with thin lines when they come
-   near each other. Nodes close to the pointer reach out to it and lean
-   gently towards it. A click sends out a ring, a "ping", in a random
-   accent colour that lights up the nodes it passes for a moment.
-   It runs only while the academic profile is showing, pauses in a
-   background tab, and stays off for visitors who prefer reduced motion.
+   Faint traces run across the page the way they do on a printed
+   circuit board: straight runs that turn at 45°, ending in small pads.
+   The board itself never moves. Near the pointer the traces light up,
+   and moving over them sends signals running along the nearest trace;
+   a click sends a ring out and a burst of signals, in a random accent
+   colour, along the traces around it. It runs only while the academic
+   profile is showing, pauses in a background tab, and stays off for
+   visitors who prefer reduced motion.
    ================================================================ */
 
 (function () {
-  const LINK = 130;          /* px: nodes closer than this are linked */
-  const REACH = 170;         /* px: nodes closer than this link to the pointer */
-  const COLOURS = [[225, 201, 85], [74, 144, 217], [64, 200, 190], [160, 120, 255], [240, 120, 90]];
+  const GRID = 26;           /* px between routing points */
+  const GLOW = 150;          /* px: radius of the lit area around the pointer */
+  const COLOURS = [[225, 201, 85], [74, 200, 255], [64, 220, 190], [170, 130, 255], [255, 130, 90]];
+  /* 8 routing directions; a trace turns by one step (45°) at a time */
+  const DIRS = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  let canvas, ctx, W = 0, H = 0, nodes = [], pings = [];
-  let mouse = { x: 0, y: 0, on: false };
-  let running = false, raf = 0;
+  let canvas, ctx, base, lit, W = 0, H = 0, dpr = 1;
+  let traces = [], signals = [], pings = [];
+  let mouse = { x: 0, y: 0, on: false }, lastSpawn = 0;
+  let running = false, raf = 0, resizeTimer = 0;
 
   function setup() {
     canvas = document.createElement('canvas');
@@ -25,14 +30,14 @@
     canvas.setAttribute('aria-hidden', 'true');
     document.body.prepend(canvas);
     ctx = canvas.getContext('2d');
-    resize();
+    base = document.createElement('canvas');
+    lit = document.createElement('canvas');
+    build();
 
-    window.addEventListener('resize', resize);
-    window.addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.on = e.pointerType !== 'touch'; }, { passive: true });
+    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 200); });
+    window.addEventListener('pointermove', onMove, { passive: true });
     document.documentElement.addEventListener('pointerleave', () => { mouse.on = false; });
-    window.addEventListener('pointerdown', e => {
-      if (running) pings.push({ x: e.clientX, y: e.clientY, r: 0, c: COLOURS[Math.floor(Math.random() * COLOURS.length)] });
-    }, { passive: true });
+    window.addEventListener('pointerdown', onDown, { passive: true });
     document.addEventListener('visibilitychange', sync);
     reduceMotion.addEventListener?.('change', sync);
     /* Profile switches toggle body.art-mode (toggle.js:applyMode) */
@@ -40,80 +45,174 @@
     sync();
   }
 
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  /* ── The board ──────────────────────────────────────────────── */
+  /* Routes traces on a grid, never crossing a used point, then draws
+     them once in two versions: faint (always) and bright (near the
+     pointer). Each trace keeps its points and running lengths so a
+     signal can find where it is along it. */
+  function build() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = window.innerWidth;
     H = window.innerHeight;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
+    for (const c of [canvas, base, lit]) { c.width = W * dpr; c.height = H * dpr; }
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.round(Math.min(110, Math.max(24, (W * H) / 14000)));
-    nodes = Array.from({ length: count }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-      r: 1 + Math.random() * 1.3, heat: 0, c: COLOURS[1],
-    }));
+
+    const cols = Math.ceil(W / GRID) + 1, rows = Math.ceil(H / GRID) + 1;
+    const used = new Uint8Array(cols * rows);
+    const free = (c, r) => c >= 0 && r >= 0 && c < cols && r < rows && !used[r * cols + c];
+    traces = [];
+    const target = Math.round((cols * rows) / 34);
+    for (let tries = 0; tries < target * 6 && traces.length < target; tries++) {
+      let c = Math.floor(Math.random() * cols), r = Math.floor(Math.random() * rows);
+      if (!free(c, r)) continue;
+      let d = Math.floor(Math.random() * 8);
+      const cells = [[c, r]];
+      used[r * cols + c] = 1;
+      const steps = 4 + Math.floor(Math.random() * 14);
+      for (let s = 0; s < steps; s++) {
+        if (s > 1 && Math.random() < 0.22) d = (d + (Math.random() < 0.5 ? 1 : 7)) % 8;
+        const nc = c + DIRS[d][0], nr = r + DIRS[d][1];
+        if (!free(nc, nr)) break;
+        c = nc; r = nr;
+        used[r * cols + c] = 1;
+        cells.push([c, r]);
+      }
+      if (cells.length < 4) continue;
+      /* keep only the corners as points */
+      const pts = [cells[0]];
+      for (let k = 1; k < cells.length - 1; k++) {
+        const a = cells[k - 1], b = cells[k], n = cells[k + 1];
+        if (b[0] - a[0] !== n[0] - b[0] || b[1] - a[1] !== n[1] - b[1]) pts.push(b);
+      }
+      pts.push(cells[cells.length - 1]);
+      const p = pts.map(([x, y]) => [x * GRID + GRID / 2, y * GRID + GRID / 2]);
+      const lens = [0];
+      for (let k = 1; k < p.length; k++) lens.push(lens[k - 1] + Math.hypot(p[k][0] - p[k - 1][0], p[k][1] - p[k - 1][1]));
+      traces.push({ p, lens, total: lens[lens.length - 1] });
+    }
+    drawBoard(base, 'rgba(110, 160, 230, 0.32)', 1.1);
+    drawBoard(lit, 'rgba(150, 215, 255, 0.95)', 1.4);
+    signals = [];
+    pings = [];
   }
 
+  function drawBoard(target, colour, width) {
+    const g = target.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, W, H);
+    g.strokeStyle = colour;
+    g.fillStyle = colour;
+    g.lineWidth = width;
+    g.lineJoin = 'round';
+    for (const t of traces) {
+      g.beginPath();
+      g.moveTo(t.p[0][0], t.p[0][1]);
+      for (let k = 1; k < t.p.length; k++) g.lineTo(t.p[k][0], t.p[k][1]);
+      g.stroke();
+      /* a filled via at the start, a ring-shaped pad at the end */
+      const [sx, sy] = t.p[0], [ex, ey] = t.p[t.p.length - 1];
+      g.beginPath(); g.arc(sx, sy, 2.2, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(ex, ey, 3.4, 0, Math.PI * 2); g.stroke();
+    }
+  }
+
+  /* ── Signals ────────────────────────────────────────────────── */
+  function pointAt(t, dist) {
+    dist = Math.max(0, Math.min(t.total, dist));
+    let k = 1;
+    while (k < t.lens.length - 1 && t.lens[k] < dist) k++;
+    const f = (dist - t.lens[k - 1]) / ((t.lens[k] - t.lens[k - 1]) || 1);
+    return [t.p[k - 1][0] + (t.p[k][0] - t.p[k - 1][0]) * f, t.p[k - 1][1] + (t.p[k][1] - t.p[k - 1][1]) * f];
+  }
+
+  /* How close a trace passes to a point, and how far along it that is */
+  function closestOn(t, x, y) {
+    let d = Infinity, at = 0;
+    for (let k = 1; k < t.p.length; k++) {
+      const [ax, ay] = t.p[k - 1], [bx, by] = t.p[k];
+      const vx = bx - ax, vy = by - ay, len2 = vx * vx + vy * vy || 1;
+      const f = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / len2));
+      const dk = Math.hypot(x - (ax + vx * f), y - (ay + vy * f));
+      if (dk < d) { d = dk; at = t.lens[k - 1] + Math.sqrt(len2) * f; }
+    }
+    return { t, d, at };
+  }
+
+  /* Traces passing within `within` px of a point, nearest first */
+  function near(x, y, within) {
+    return traces.map(t => closestOn(t, x, y)).filter(h => h.d < within).sort((a, b) => a.d - b.d);
+  }
+
+  function launch(t, at, colour) {
+    const dir = at > t.total / 2 ? -1 : 1;   /* run towards the farther end */
+    signals.push({ t, pos: at, dir, speed: 3 + Math.random() * 2, c: colour, life: 1 });
+  }
+
+  function onMove(e) {
+    mouse.x = e.clientX; mouse.y = e.clientY; mouse.on = e.pointerType !== 'touch';
+    if (!running || !mouse.on) return;
+    const now = performance.now();
+    if (now - lastSpawn < 140 || signals.length > 24) return;
+    const [hit] = near(e.clientX, e.clientY, 60);
+    if (hit) { launch(hit.t, hit.at, COLOURS[1]); lastSpawn = now; }
+  }
+
+  function onDown(e) {
+    if (!running) return;
+    const c = COLOURS[Math.floor(Math.random() * COLOURS.length)];
+    pings.push({ x: e.clientX, y: e.clientY, r: 0, c });
+    /* signals out along up to eight traces around the click */
+    near(e.clientX, e.clientY, 170).slice(0, 8).forEach(h => launch(h.t, h.at, c));
+  }
+
+  /* ── Frame ──────────────────────────────────────────────────── */
   function frame() {
     raf = requestAnimationFrame(frame);
     ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(base, 0, 0, W, H);
 
-    for (const n of nodes) {
-      n.x += n.vx; n.y += n.vy;
-      if (n.x < -20) n.x = W + 20; else if (n.x > W + 20) n.x = -20;
-      if (n.y < -20) n.y = H + 20; else if (n.y > H + 20) n.y = -20;
-      if (mouse.on) {
-        const dx = mouse.x - n.x, dy = mouse.y - n.y, d = Math.hypot(dx, dy);
-        if (d < REACH && d > 1) { n.x += dx / d * 0.25; n.y += dy / d * 0.25; }
+    /* Light up the board around the pointer, brightest at the centre */
+    if (mouse.on) {
+      for (const [r, a] of [[GLOW, 0.25], [GLOW * 0.65, 0.3], [GLOW * 0.35, 0.35]]) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(mouse.x, mouse.y, r, 0, Math.PI * 2); ctx.clip();
+        ctx.globalAlpha = a;
+        ctx.drawImage(lit, 0, 0, W, H);
+        ctx.restore();
       }
-      n.heat *= 0.96;
     }
 
-    /* Pings: expanding rings that light up the nodes they cross */
     for (let k = pings.length - 1; k >= 0; k--) {
       const p = pings[k];
       p.r += 6;
-      const life = 1 - p.r / 520;
+      const life = 1 - p.r / 420;
       if (life <= 0) { pings.splice(k, 1); continue; }
-      ctx.strokeStyle = `rgba(${p.c[0]}, ${p.c[1]}, ${p.c[2]}, ${0.45 * life})`;
+      ctx.strokeStyle = `rgba(${p.c[0]}, ${p.c[1]}, ${p.c[2]}, ${0.4 * life})`;
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.stroke();
-      for (const n of nodes) {
-        if (Math.abs(Math.hypot(n.x - p.x, n.y - p.y) - p.r) < 8) { n.heat = 1; n.c = p.c; }
-      }
     }
 
-    /* Links between nearby nodes, tinted by any node that is lit */
-    ctx.lineWidth = 1;
-    for (let i = 0; i < nodes.length; i++) {
-      const a = nodes[i];
-      for (let j = i + 1; j < nodes.length; j++) {
-        const b = nodes[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d > LINK) continue;
-        const hot = a.heat > b.heat ? a : b;
-        const c = hot.heat > 0.05 ? hot.c : COLOURS[1];
-        ctx.strokeStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${(1 - d / LINK) * (0.22 + hot.heat * 0.5)})`;
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    /* Each signal is a short bright streak with a glowing head */
+    ctx.lineCap = 'round';
+    for (let k = signals.length - 1; k >= 0; k--) {
+      const s = signals[k];
+      s.pos += s.dir * s.speed;
+      if (s.pos < -40 || s.pos > s.t.total + 40) { signals.splice(k, 1); continue; }
+      const tail = s.pos - s.dir * 34;
+      const [hx, hy] = pointAt(s.t, s.pos);
+      ctx.strokeStyle = `rgba(${s.c[0]}, ${s.c[1]}, ${s.c[2]}, 0.85)`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const steps = 6;
+      for (let i = 0; i <= steps; i++) {
+        const [x, y] = pointAt(s.t, tail + (s.pos - tail) * (i / steps));
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
-    }
-
-    /* Nodes near the pointer reach out to it */
-    if (mouse.on) {
-      for (const n of nodes) {
-        const d = Math.hypot(mouse.x - n.x, mouse.y - n.y);
-        if (d > REACH) continue;
-        ctx.strokeStyle = `rgba(225, 201, 85, ${(1 - d / REACH) * 0.35})`;
-        ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
-      }
-    }
-
-    for (const n of nodes) {
-      const c = n.heat > 0.05 ? n.c : [140, 180, 235];
-      ctx.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${0.4 + n.heat * 0.6})`;
-      ctx.beginPath(); ctx.arc(n.x, n.y, n.r + n.heat * 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = `rgba(${s.c[0]}, ${s.c[1]}, ${s.c[2]}, 1)`;
+      ctx.beginPath(); ctx.arc(hx, hy, 2.4, 0, Math.PI * 2); ctx.fill();
     }
   }
 
@@ -125,6 +224,7 @@
     } else if (!want && running) {
       running = false;
       cancelAnimationFrame(raf);
+      signals = [];
       pings = [];
     }
   }
