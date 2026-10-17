@@ -163,9 +163,9 @@ const Intro = (() => {
       if (!el) return;
       el.classList.add('intro--gone');
       if (!reduce) root.classList.add('intro-reveal');
-    }, reduce ? 0 : 800);
-    setTimeout(close, reduce ? 50 : 1600);
-    setTimeout(() => root.classList.remove('intro-reveal'), reduce ? 0 : 3000);
+    }, reduce ? 0 : 1000);   /* once the chosen half covers the screen */
+    setTimeout(close, reduce ? 50 : 1800);
+    setTimeout(() => root.classList.remove('intro-reveal'), reduce ? 0 : 3200);
   }
 
   function close() {

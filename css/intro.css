@@ -30,6 +30,7 @@ html.intro-pending body { visibility: hidden; overflow: hidden; background: #0b1
   position: relative;
   flex: 1 1 0;
   min-width: 0;
+  min-height: 0;  /* lets a stacked half collapse fully on phones */
   overflow: hidden;
   border: 0;
   padding: 0;
@@ -413,6 +414,10 @@ html.intro-reveal .floating-toggle { animation-delay: 0.3s; }
 .intro--leaving .intro-side { pointer-events: none; }
 .intro--leaving[data-chosen="academic"] .intro-side--acad,
 .intro--leaving[data-chosen="art"]      .intro-side--art { flex-grow: 14; }
+/* ...and the other half collapses all the way, so the chosen one covers
+   the whole screen (width side by side, height when stacked on phones) */
+.intro--leaving[data-chosen="academic"] .intro-side--art,
+.intro--leaving[data-chosen="art"]      .intro-side--acad { flex-grow: 0; }
 .intro--leaving .intro-copy { opacity: 0; transition: opacity 0.35s ease; }
 .intro--gone { opacity: 0; }
 
@@ -423,6 +428,7 @@ html.intro-reveal .floating-toggle { animation-delay: 0.3s; }
 @keyframes intro-in-bottom{ from { transform: translateY(100%); }  to { transform: none; } }
 @keyframes intro-up    { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes intro-fade  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes intro-fade-out { to { opacity: 0; } }
 @keyframes intro-rise  { from { opacity: 0; transform: translateY(10%); } to { opacity: 1; transform: none; } }
 @keyframes intro-pin   { from { opacity: 0; transform: translateY(-40%) rotate(-14deg) scale(0.9); } to { opacity: 1; transform: translateY(-54%) rotate(-4deg); } }
 @keyframes intro-splat { from { opacity: 0; scale: 0.2; rotate: -30deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
@@ -469,7 +475,8 @@ html.intro-reveal .floating-toggle { animation-delay: 0.3s; }
     color: #f3ead6;
     animation: intro-name 1.2s var(--i-ease) 0.45s both;
   }
-  .intro--leaving .intro-name-m { opacity: 0; transition: opacity 0.35s ease; }
+  /* an animation, not a transition: the entry animation holds opacity */
+  .intro--leaving .intro-name-m { animation: intro-fade-out 0.35s ease forwards; }
 
   /* In each half the text and the picture sit side by side. The text
      column runs to the bottom of the half, where its button sits. */
